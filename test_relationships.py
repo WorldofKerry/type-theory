@@ -1,8 +1,13 @@
-from relationships import Relationship, Type
+from complex_relationships import MultiType, Effectiveness
+from single_types import TypeRelationship, Type
+
+# def assert_weakness_count(*args, count: int):
+#     relationship = Relationship.from_types(*args)
+#     assert len(relationship.more_effective) == count, f"{args=} {relationship=}"
 
 def assert_weakness_count(*args, count: int):
-    relationship = Relationship.from_types(*args)
-    assert len(relationship.more_effective) == count, f"{args=} {relationship=}"
+    relationships = MultiType(set(args)).defense()
+    assert len(relationships.effective_attacks(Effectiveness.MORE_EFFECTIVE)) == count, f"{args=} {relationships=}"
 
 def test_assert_one_weaknesses():
     combos = [
@@ -36,4 +41,4 @@ def test_select_weaknesses():
     assert_weakness_count(Type.DRAGON, Type.FAIRY, count=4)
 
 def test_immunities():
-    assert Relationship.from_types(Type.GRASS, Type.FAIRY).no_effect == {Type.DRAGON}
+    assert MultiType({Type.GRASS, Type.FAIRY}).defense().effective_attacks(Effectiveness.NO_EFFECT) == {Type.DRAGON}
