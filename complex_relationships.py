@@ -17,7 +17,7 @@ class Effectiveness(Enum):
     LESS_EFFECTIVE = lambda x: x < 1.0
 
 @dataclass(frozen=True)
-class FloatRelationship:
+class Relationship:
     relationship: dict[Type, float] = field(default_factory=dict)
 
     def effective_attacks(self, effectiveness: Effectiveness) -> set[Type]:
@@ -25,16 +25,25 @@ class FloatRelationship:
 
 @dataclass(frozen=True)
 class MultiType:
-    types: set[Type]
+    _types: frozenset[Type]
+
+    @classmethod
+    def from_types(cls, *types: Type) -> MultiType:
+        return cls(frozenset(types))
 
     @staticmethod
-    def all_types(type_count: int) -> set[MultiType]:
-        return {MultiType(set(types)) for types in combinations(Type, type_count)}
+    def all_types(type_count: int = 1) -> set[MultiType]:
+        combs = list(combinations(Type, type_count))
+        ret = set()
+        for types in combs:
+            ret.add(MultiType(frozenset(types)))
+        return ret
 
-    def defense(self) -> FloatRelationship:
+    @property
+    def defense(self) -> Relationship:
         type_multipliers = dict.fromkeys(Type, 1.0)
         for attack_type, relationship in ATTACK_TYPE_CHART.items():
-            type_multipliers[attack_type] *= 0.0 if self.types & relationship.no_effect else 1.0
-            type_multipliers[attack_type] *= 0.5 if self.types & relationship.half_effective else 1.0
-            type_multipliers[attack_type] *= 2.0 if self.types & relationship.double_effective else 1.0
-        return FloatRelationship(relationship=type_multipliers)
+            type_multipliers[attack_type] *= 0.0 if self._types & relationship.no_effect else 1.0
+            type_multipliers[attack_type] *= 0.5 if self._types & relationship.half_effective else 1.0
+            type_multipliers[attack_type] *= 2.0 if self._types & relationship.double_effective else 1.0
+        return Relationship(relationship=type_multipliers)

@@ -26,7 +26,7 @@ class Type(Enum):
     STEEL = auto()
     FAIRY = auto()
 
-@dataclass
+@dataclass(frozen=True)
 class TypeRelationship:
     no_effect: set[Type] = field(default_factory=set)
     half_effective: set[Type] = field(default_factory=set)
