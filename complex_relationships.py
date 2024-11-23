@@ -57,7 +57,7 @@ class MultiType:
         type_multipliers = dict.fromkeys(types, 1.0)
         for t in types:
             type_multipliers[t] = max(
-                self.defense.relationship[attack_type]
-                for attack_type in t._types
+                t.defense.relationship[attack_type]
+                for attack_type in self._types
             )
         return type_multipliers
