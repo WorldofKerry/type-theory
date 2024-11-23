@@ -50,6 +50,9 @@ class Relationship:
     @classmethod
     @cache
     def from_types(cls, type1: Type, type2: Optional[Type] = None):
+        """
+        Relationship of a dual type defending pokemon to an attacking type
+        """
         type_multipliers = dict.fromkeys(Type, 1.0)
         for attack_type, relationship in ATTACK_TYPE_CHART.items():
             type_multipliers[attack_type] *= 0.0 if type1 in relationship.no_effect else 1.0
@@ -66,6 +69,15 @@ class Relationship:
             double_effective={attack_type for attack_type, multiplier in type_multipliers.items() if multiplier == 2.0},
             quad_effective={attack_type for attack_type, multiplier in type_multipliers.items() if multiplier == 4.0},
         )
+
+@dataclass
+class FullType:
+    types: set[Type]
+
+def best_coverage(*types: Type) -> set[FullType]:
+    """
+    Given move types, 
+    """
 
 ATTACK_TYPE_CHART = {
     Type.NORMAL: Relationship(
