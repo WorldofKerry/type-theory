@@ -112,6 +112,7 @@ ATTACK_TYPE_CHART = {
         double_effective={Type.GRASS, Type.FIGHTING, Type.BUG},
     ),
     Type.PSYCHIC: Relationship(
+        no_effect={Type.DARK},
         half_effective={Type.PSYCHIC, Type.STEEL},
         double_effective={Type.FIGHTING, Type.POISON},
     ),
@@ -126,7 +127,7 @@ ATTACK_TYPE_CHART = {
     Type.GHOST: Relationship(
         no_effect={Type.NORMAL},
         half_effective={Type.DARK},
-        double_effective={Type.GHOST, Type.DARK},
+        double_effective={Type.PSYCHIC, Type.GHOST},
     ),
     Type.DRAGON: Relationship(
         no_effect={Type.FAIRY},
