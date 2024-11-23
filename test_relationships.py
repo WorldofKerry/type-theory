@@ -1,7 +1,7 @@
 from complex_relationships import MultiType, Effectiveness, Type
 
 def assert_weakness_count(*args, count: int):
-    relationships = MultiType.from_types(*args).defense
+    relationships = MultiType(*args).defense
     assert len(relationships.effective_attacks(Effectiveness.MORE_EFFECTIVE)) == count, f"{args=} {relationships=}"
 
 def test_assert_one_weaknesses():
@@ -36,4 +36,4 @@ def test_select_weaknesses():
     assert_weakness_count(Type.DRAGON, Type.FAIRY, count=4)
 
 def test_immunities():
-    assert MultiType({Type.GRASS, Type.FAIRY}).defense.effective_attacks(Effectiveness.NO_EFFECT) == {Type.DRAGON}
+    assert MultiType(Type.GRASS, Type.FAIRY).defense.effective_attacks(Effectiveness.NO_EFFECT) == {Type.DRAGON}

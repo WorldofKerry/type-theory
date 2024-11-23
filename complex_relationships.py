@@ -23,27 +23,41 @@ class Relationship:
     def effective_attacks(self, effectiveness: Effectiveness) -> set[Type]:
         return {k for k, v in self.relationship.items() if effectiveness(v)}
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, init=False)
 class MultiType:
     _types: frozenset[Type]
 
-    @classmethod
-    def from_types(cls, *types: Type) -> MultiType:
-        return cls(frozenset(types))
+    def __repr__(self):
+        return f"{self.__class__.__name__}({', '.join(map(repr, self._types))})"
+
+    def __init__(self, *types: Type) -> MultiType:
+        object.__setattr__(self, "_types", frozenset(types))
 
     @staticmethod
     def all_types(type_count: int = 1) -> set[MultiType]:
-        combs = list(combinations(Type, type_count))
-        ret = set()
-        for types in combs:
-            ret.add(MultiType(frozenset(types)))
-        return ret
+        return {MultiType(*types) for types in combinations(Type, type_count)}
 
     @property
     def defense(self) -> Relationship:
+        """
+        Defensive properties
+        """
         type_multipliers = dict.fromkeys(Type, 1.0)
         for attack_type, relationship in ATTACK_TYPE_CHART.items():
             type_multipliers[attack_type] *= 0.0 if self._types & relationship.no_effect else 1.0
             type_multipliers[attack_type] *= 0.5 if self._types & relationship.half_effective else 1.0
             type_multipliers[attack_type] *= 2.0 if self._types & relationship.double_effective else 1.0
         return Relationship(relationship=type_multipliers)
+
+    def attack(self, types: set[MultiType]) -> dict[MultiType, float]:
+        """
+        Attack coverage
+        """
+        # Assumes we use the type that is best against every other type
+        type_multipliers = dict.fromkeys(types, 1.0)
+        for t in types:
+            type_multipliers[t] = max(
+                self.defense.relationship[attack_type]
+                for attack_type in t._types
+            )
+        return type_multipliers

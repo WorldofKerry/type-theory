@@ -26,6 +26,9 @@ class Type(Enum):
     STEEL = auto()
     FAIRY = auto()
 
+    def __repr__(self):
+        return self.name
+
 @dataclass(frozen=True)
 class TypeRelationship:
     no_effect: set[Type] = field(default_factory=set)
