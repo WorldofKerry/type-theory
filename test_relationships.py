@@ -2,7 +2,7 @@ from relationships import Relationship, Type
 
 def assert_weakness_count(*args, count: int):
     relationship = Relationship.from_types(*args)
-    assert len(relationship.super_effective) == count, f"{args=} {relationship=}"
+    assert len(relationship.more_effective) == count, f"{args=} {relationship=}"
 
 def test_assert_one_weaknesses():
     combos = [
@@ -34,3 +34,6 @@ def test_select_weaknesses():
     assert_weakness_count(Type.ELECTRIC, Type.FLYING, count=2)
     assert_weakness_count(Type.ELECTRIC, Type.GRASS, count=4)
     assert_weakness_count(Type.DRAGON, Type.FAIRY, count=4)
+
+def test_immunities():
+    assert Relationship.from_types(Type.GRASS, Type.FAIRY).no_effect == {Type.DRAGON}

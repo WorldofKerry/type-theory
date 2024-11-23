@@ -38,13 +38,13 @@ class Relationship:
     @property
     def normal_effective(self) -> set[Type]:
         return set(Type) - self.no_effect - self.half_effective - self.double_effective
-    
-    @property
-    def not_very_effective(self) -> set[Type]:
-        return self.half_effective | self.quarter_effective
 
     @property
-    def super_effective(self) -> set[Type]:
+    def less_effective(self) -> set[Type]:
+        return self.half_effective | self.quarter_effective | self.no_effect
+
+    @property
+    def more_effective(self) -> set[Type]:
         return self.double_effective | self.quad_effective
 
     @classmethod
