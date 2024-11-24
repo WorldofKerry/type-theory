@@ -1,4 +1,4 @@
-from complex_relationships import MultiType, Type
+from relationships import MultiType, Type
 
 def test_all_types():
     assert len(MultiType.all_types()) == len(Type)

@@ -1,4 +1,4 @@
-from complex_relationships import MultiType, Effectiveness, Type
+from relationships import MultiType, Effectiveness, Type
 
 def assert_weakness_count(*args, count: int):
     relationships = MultiType(*args).defense()

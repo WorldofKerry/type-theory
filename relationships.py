@@ -2,10 +2,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cache
-from typing import Generic, Optional, TypeVar
+from typing import Callable, Generic, Optional, TypeVar
 from itertools import combinations
 
-from single_types import ATTACK_TYPE_CHART, Type
+from type_chart import ATTACK_TYPE_CHART, Type
 
 class Effectiveness(Enum):
     NO_EFFECT = lambda x: x == 0.0
@@ -13,6 +13,8 @@ class Effectiveness(Enum):
     HALF_EFFECTIVE = lambda x: x == 0.5
     NORMAL_EFFECTIVE = lambda x: x == 1.0
     DOUBLE_EFFECTIVE = lambda x: x == 2.0
+    QUADRUPLE_EFFECTIVE = lambda x: x == 4.0
+
     MORE_EFFECTIVE = lambda x: x > 1.0
     LESS_EFFECTIVE = lambda x: x < 1.0
 
@@ -22,8 +24,8 @@ class Relationship(dict[T, float]):
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
-    def filter(self, effectiveness: Effectiveness) -> Relationship[T]:
-        return Relationship({k: v for k, v in self.items() if effectiveness(v)})
+    def filter(self, func: Callable[[float], bool] | Effectiveness) -> Relationship[T]:
+        return Relationship({k: v for k, v in self.items() if func(v)})
 
 @dataclass(frozen=True, init=False)
 class MultiType:
