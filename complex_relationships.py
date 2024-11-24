@@ -22,8 +22,8 @@ class Relationship(dict[T, float]):
     def __init__(self, *args, **kwargs):
         self.update(*args, **kwargs)
 
-    def effective_attacks(self, effectiveness: Effectiveness) -> set[T]:
-        return {k for k, v in self.items() if effectiveness(v)}
+    def filter(self, effectiveness: Effectiveness) -> Relationship[T]:
+        return Relationship({k: v for k, v in self.items() if effectiveness(v)})
 
 @dataclass(frozen=True, init=False)
 class MultiType:
