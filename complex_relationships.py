@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cache
-from typing import Optional
+from typing import Generic, Optional, TypeVar
 from itertools import combinations
 
 from single_types import ATTACK_TYPE_CHART, Type
@@ -16,12 +16,17 @@ class Effectiveness(Enum):
     MORE_EFFECTIVE = lambda x: x > 1.0
     LESS_EFFECTIVE = lambda x: x < 1.0
 
-@dataclass(frozen=True)
-class Relationship:
-    relationship: dict[Type, float] = field(default_factory=dict)
+T = TypeVar("T")
 
-    def effective_attacks(self, effectiveness: Effectiveness) -> set[Type]:
+@dataclass(frozen=True)
+class Relationship(Generic[T]):
+    relationship: dict[T, float] = field(default_factory=dict)
+
+    def effective_attacks(self, effectiveness: Effectiveness) -> set[T]:
         return {k for k, v in self.relationship.items() if effectiveness(v)}
+    
+    def items(self):
+        return self.relationship.items()
 
 @dataclass(frozen=True, init=False)
 class MultiType:
@@ -38,7 +43,7 @@ class MultiType:
         return {MultiType(*types) for types in combinations(Type, type_count)}
 
     @property
-    def defense(self) -> Relationship:
+    def defense(self) -> Relationship[Type]:
         """
         Defensive properties
         """
@@ -49,15 +54,26 @@ class MultiType:
             type_multipliers[attack_type] *= 2.0 if self._types & relationship.double_effective else 1.0
         return Relationship(relationship=type_multipliers)
 
-    def attack(self, types: set[MultiType]) -> dict[MultiType, float]:
+    # def attack_coverage(self, types: set[MultiType]) -> dict[MultiType, float]:
+    #     """
+    #     Attack coverage
+    #     """
+    #     type_multipliers = dict.fromkeys(types, 1.0)
+    #     for t in types:
+    #         type_multipliers[t] = max(
+    #             t.defense.relationship[attack_type]
+    #             for attack_type in self._types
+    #         )
+    #     return type_multipliers
+    
+    def attack_coverage(self, types: set[MultiType]) -> Relationship[MultiType]:
         """
         Attack coverage
         """
-        # Assumes we use the type that is best against every other type
-        type_multipliers = dict.fromkeys(types, 1.0)
+        type_multipliers = {}
         for t in types:
             type_multipliers[t] = max(
                 t.defense.relationship[attack_type]
                 for attack_type in self._types
             )
-        return type_multipliers
+        return Relationship(relationship=type_multipliers)

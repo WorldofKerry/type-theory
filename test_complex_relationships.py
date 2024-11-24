@@ -6,7 +6,7 @@ def test_all_types():
 
 def test_attack_type_coverage():
     defense = MultiType.all_types(2) | MultiType.all_types(1)
-    relationship = MultiType(Type.NORMAL, Type.GHOST).attack(defense)
+    relationship = MultiType(Type.NORMAL, Type.GHOST).attack_coverage(defense)
 
     filtered_relationship = {k: v for k, v in relationship.items() if v < 1.0}
     assert filtered_relationship == {
