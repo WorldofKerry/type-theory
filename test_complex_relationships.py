@@ -16,3 +16,8 @@ def test_attack_type_coverage():
         MultiType(Type.DARK, Type.ROCK): 0.5,
         MultiType(Type.ROCK, Type.NORMAL): 0.5,
     }
+
+def test_quarter_resist():
+    assert MultiType(Type.FIGHTING, Type.DARK).defense()[Type.DARK] == 0.25
+    assert MultiType(Type.WATER, Type.GROUND).defense()[Type.GRASS] == 4.0
+    assert MultiType(Type.GHOST, Type.GROUND).defense()[Type.NORMAL] == 0.0

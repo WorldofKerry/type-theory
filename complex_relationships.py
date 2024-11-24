@@ -52,18 +52,25 @@ class MultiType:
         """
         type_multipliers = dict.fromkeys(Type, 1.0)
         for attack_type, relationship in ATTACK_TYPE_CHART.items():
-            type_multipliers[attack_type] *= 0.0 if self._types & relationship.no_effect else 1.0
-            type_multipliers[attack_type] *= 0.5 if self._types & relationship.half_effective else 1.0
-            type_multipliers[attack_type] *= 2.0 if self._types & relationship.double_effective else 1.0
+            for t in self._types:
+                type_multipliers[attack_type] *= 0.0 if t in relationship.no_effect else 1.0
+                type_multipliers[attack_type] *= 0.5 if t in relationship.half_effective else 1.0
+                type_multipliers[attack_type] *= 2.0 if t in relationship.double_effective else 1.0
         return Relationship(type_multipliers)
 
     def attack_coverage(self, types: set[MultiType]) -> Relationship[MultiType]:
-        """
-        Attack coverage
-        """
         type_multipliers = {}
         for t in types:
             type_multipliers[t] = max(
+                t.defense()[attack_type]
+                for attack_type in self._types
+            )
+        return Relationship(type_multipliers)
+
+    def resisted_by(self, types: set[MultiType]) -> Relationship[MultiType]:
+        type_multipliers = {}
+        for t in types:
+            type_multipliers[t] = min(
                 t.defense()[attack_type]
                 for attack_type in self._types
             )
