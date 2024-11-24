@@ -18,15 +18,12 @@ class Effectiveness(Enum):
 
 T = TypeVar("T")
 
-@dataclass(frozen=True)
-class Relationship(Generic[T]):
-    relationship: dict[T, float] = field(default_factory=dict)
+class Relationship(dict[T, float]):
+    def __init__(self, *args, **kwargs):
+        self.update(*args, **kwargs)
 
     def effective_attacks(self, effectiveness: Effectiveness) -> set[T]:
-        return {k for k, v in self.relationship.items() if effectiveness(v)}
-    
-    def items(self):
-        return self.relationship.items()
+        return {k for k, v in self.items() if effectiveness(v)}
 
 @dataclass(frozen=True, init=False)
 class MultiType:
@@ -39,10 +36,16 @@ class MultiType:
         object.__setattr__(self, "_types", frozenset(types))
 
     @staticmethod
-    def all_types(type_count: int = 1) -> set[MultiType]:
+    def _all_types(type_count: int) -> set[MultiType]:
         return {MultiType(*types) for types in combinations(Type, type_count)}
 
-    @property
+    @staticmethod
+    def all_types(type_count: int = 1, include_less: bool = True) -> set[MultiType]:
+        if not include_less or type_count == 1:
+            return MultiType._all_types(type_count)
+        return MultiType._all_types(type_count) | MultiType.all_types(type_count - 1)
+
+    @cache
     def defense(self) -> Relationship[Type]:
         """
         Defensive properties
@@ -52,20 +55,8 @@ class MultiType:
             type_multipliers[attack_type] *= 0.0 if self._types & relationship.no_effect else 1.0
             type_multipliers[attack_type] *= 0.5 if self._types & relationship.half_effective else 1.0
             type_multipliers[attack_type] *= 2.0 if self._types & relationship.double_effective else 1.0
-        return Relationship(relationship=type_multipliers)
+        return Relationship(type_multipliers)
 
-    # def attack_coverage(self, types: set[MultiType]) -> dict[MultiType, float]:
-    #     """
-    #     Attack coverage
-    #     """
-    #     type_multipliers = dict.fromkeys(types, 1.0)
-    #     for t in types:
-    #         type_multipliers[t] = max(
-    #             t.defense.relationship[attack_type]
-    #             for attack_type in self._types
-    #         )
-    #     return type_multipliers
-    
     def attack_coverage(self, types: set[MultiType]) -> Relationship[MultiType]:
         """
         Attack coverage
@@ -73,7 +64,7 @@ class MultiType:
         type_multipliers = {}
         for t in types:
             type_multipliers[t] = max(
-                t.defense.relationship[attack_type]
+                t.defense()[attack_type]
                 for attack_type in self._types
             )
-        return Relationship(relationship=type_multipliers)
+        return Relationship(type_multipliers)
