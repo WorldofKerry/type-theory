@@ -118,3 +118,12 @@ class Team:
             for attack_type, multiplier in member.defense().items()
             if multiplier < 1.0
         ))
+
+    def product_weaknesses_resistances(self, immune_weight: float = 0.125) -> dict[Type, float]:
+        ret = {}
+        for member in self._members:
+            for attack_type, multiplier in member.defense().items():
+                if multiplier == 0.0:
+                    multiplier = immune_weight
+                ret[attack_type] = ret.get(attack_type, 1.0) * multiplier
+        return Type.natural_order(ret)

@@ -82,17 +82,33 @@ def test_find_complementary_monotype_team():
     print(teams)
 
 def test_find_complementary_team():
-    teams = set()
+    teams = []
 
-    for types in itertools.combinations(REAL_POKEMON_TYPES, 3):
+    for types in itertools.combinations(REAL_POKEMON_TYPES, 2):
         team = Team.from_list(types)
         weaknesses = team.weaknesses_count()
         resistances = team.resistances_count()
-        for weakness in weaknesses:
+        for weakness, weak_count in weaknesses.items():
             if weakness not in resistances:
                 break
         else:
-            teams.add(team)
+            teams.append((sum(resistances.values()), team))
 
-    for team in teams:
+    for team in sorted(teams, key=lambda x: x[0]):
         print(team)
+
+def test_find_product_weaknesses_resistances():
+    teams = []
+
+    for types in itertools.combinations(REAL_POKEMON_TYPES, 2):
+        team = Team.from_list(types)
+        product = team.product_weaknesses_resistances(immune_weight=1)
+        resist_count = len(team.resistances_count())
+        teams.append((-resist_count, sum(product.values()), team))
+
+    for team in sorted(teams, key=lambda x: x[0], reverse=True):
+        print(team)
+
+def test_good_team():
+    team = Team.from_list((MultiType(Type.STEEL, Type.GHOST), MultiType(Type.LEVITATE, Type.DRAGON, Type.DARK)))
+    print(team.resistances_count())
