@@ -43,7 +43,7 @@ class MultiType:
 
     @staticmethod
     def _all_types(type_count: int) -> set[MultiType]:
-        return {MultiType(*types) for types in combinations(Type, type_count)}
+        return {MultiType(*types) for types in combinations(Type.basic(), type_count)}
 
     @staticmethod
     def all_types(type_count: int = 1, include_less: bool = True) -> set[MultiType]:

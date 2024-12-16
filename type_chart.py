@@ -4,6 +4,7 @@ Generation 6+ Pokemon Type Chart
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from functools import cache
 from typing import TypeVar, overload
 
 T = TypeVar("T")
@@ -53,6 +54,10 @@ class Type(Enum):
     @classmethod
     def from_str(cls, value: str) -> Type:
         return cls[value.upper()]
+    
+    @staticmethod
+    def basic() -> list[Type]:
+        return [Type.NORMAL, Type.FIRE, Type.WATER, Type.ELECTRIC, Type.GRASS, Type.ICE, Type.FIGHTING, Type.POISON, Type.GROUND, Type.FLYING, Type.PSYCHIC, Type.BUG, Type.ROCK, Type.GHOST, Type.DRAGON, Type.DARK, Type.STEEL, Type.FAIRY]
 
 @dataclass(frozen=True)
 class TypeRelationship:
