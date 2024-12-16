@@ -62,6 +62,7 @@ def test_find_best_resistances():
     count_to_team = dict(sorted(count_to_team.items(), reverse=True))
     
     assert max(count_to_team.keys()) == 13
+    print(count_to_team[13])
     assert count_to_team[13] == {Team(MultiType(Type.GRASS), MultiType(Type.STEEL)), Team(MultiType(Type.DRAGON), MultiType(Type.STEEL))}
 
 def test_find_complementary_monotype_team():

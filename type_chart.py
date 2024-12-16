@@ -4,8 +4,7 @@ Generation 6+ Pokemon Type Chart
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from functools import cache
-from typing import Optional, TypeVar, overload
+from typing import TypeVar, overload
 
 T = TypeVar("T")
 
@@ -28,6 +27,8 @@ class Type(Enum):
     DARK = auto()
     STEEL = auto()
     FAIRY = auto()
+
+    LEVITATE = auto()
 
     def __repr__(self):
         return self.name
@@ -95,7 +96,7 @@ ATTACK_TYPE_CHART = {
         double_effective={Type.GRASS, Type.FAIRY},
     ),
     Type.GROUND: TypeRelationship(
-        no_effect={Type.FLYING},
+        no_effect={Type.FLYING, Type.LEVITATE},
         half_effective={Type.GRASS, Type.BUG},
         double_effective={Type.FIRE, Type.ELECTRIC, Type.POISON, Type.ROCK, Type.STEEL},
     ),
@@ -137,5 +138,7 @@ ATTACK_TYPE_CHART = {
     Type.FAIRY: TypeRelationship(
         half_effective={Type.FIRE, Type.POISON, Type.STEEL},
         double_effective={Type.FIGHTING, Type.DRAGON, Type.DARK},
+    ),
+    Type.LEVITATE: TypeRelationship(
     ),
 }
