@@ -1,0 +1,91 @@
+Minccino (F)
+IVs: 3 HP / 2 Atk / 2 Def / 26 SpA / 21 SpD / 26 Spe
+EVs: 10 HP / 6 Atk / 3 Def / 2 SpA / 3 SpD / 10 Spe
+Ability: Technician
+Level: 23
+Impish Nature
+- Pound
+- Swift
+- Double Slap
+- Tickle
+
+Mothim (M)
+IVs: 7 HP / 27 Atk / 29 Def / 26 SpA / 0 SpD / 2 Spe
+Ability: Swarm
+Level: 20
+Naive Nature
+- Tackle
+- Protect
+- Bug Bite
+
+Pansage (M)
+IVs: 16 HP / 10 Atk / 11 Def / 5 SpA / 10 SpD / 0 Spe
+Ability: Gluttony
+Level: 18
+Mild Nature
+- Lick
+- Vine Whip
+- Fury Swipes
+- Leech Seed
+
+Grimer (F)
+IVs: 6 HP / 21 Atk / 7 Def / 16 SpA / 24 SpD / 9 Spe
+Ability: Stench
+Level: 31
+Careful Nature
+- Minimize
+- Mud Bomb
+- Sludge Bomb
+- Fling
+
+Trapinch (F)
+IVs: 2 HP / 8 Atk / 0 Def / 24 SpA / 4 SpD / 9 Spe
+EVs: 1 HP / 1 SpA / 1 SpD / 4 Spe
+Ability: Arena Trap
+Level: 26
+Lax Nature
+- Feint Attack
+- Sand Tomb
+- Dig
+- Struggle Bug
+
+Voltorb
+IVs: 29 HP / 26 Atk / 4 Def / 30 SpA / 12 Spe
+EVs: 8 HP / 12 Atk / 4 Def / 11 SpA / 5 SpD / 17 Spe
+Ability: Soundproof
+Level: 24
+Calm Nature
+- Rollout
+- Thief
+- Sonic Boom
+- Charge Beam
+
+Minccino (M)
+IVs: 17 HP / 14 Atk / 13 Def / 4 SpD / 12 Spe
+Ability: Skill Link
+Level: 23
+Relaxed Nature
+- Tickle
+- Double Slap
+- Encore
+- Swift
+
+Ekans (F)
+IVs: 16 HP / 2 Atk / 13 Def / 18 SpA / 11 SpD / 1 Spe
+Ability: Shed Skin
+Level: 24
+Mild Nature
+- Bite
+- Glare
+- Screech
+- Acid
+
+Slakoth (F) @ Ghost Gem
+IVs: 0 HP / 25 Atk / 24 Def / 10 SpA / 23 SpD / 21 Spe
+Ability: Truant
+Level: 22
+Naughty Nature
+- Yawn
+- Fly
+- Slack Off
+- Strength
