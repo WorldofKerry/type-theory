@@ -1,6 +1,7 @@
 import itertools
 from relationships import Team
 from smogon_files import parse_team, parse_team_file
+from type_chart import Type
 
 def test_parse_team_file():
     types = parse_team_file("team.txt")
@@ -44,5 +45,7 @@ Mild Nature
 - Leech Life
 - Thief
 """
-    team = parse_team(txt)
-    print(team)
+    types = parse_team(txt)
+    team = Team.from_list(types)
+    
+    assert team.weaknesses_count().keys() == {Type.FIRE, Type.FLYING, Type.PSYCHIC, Type.ROCK, Type.GHOST, Type.DARK}
