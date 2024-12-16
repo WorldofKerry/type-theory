@@ -42,14 +42,16 @@ class MultiType:
         return isinstance(value, MultiType) and self._types == value._types
 
     @staticmethod
-    def _all_types(type_count: int) -> set[MultiType]:
+    def _all_types(type_count: int, include_abilities: bool) -> set[MultiType]:
+        if include_abilities:
+            return {MultiType(*types) for types in combinations(Type, type_count)}
         return {MultiType(*types) for types in combinations(Type.basic(), type_count)}
 
     @staticmethod
-    def all_types(type_count: int = 1, include_less: bool = True) -> set[MultiType]:
+    def all_types(type_count: int = 1, include_less: bool = True, include_abilities: bool = False) -> set[MultiType]:
         if not include_less or type_count == 1:
-            return MultiType._all_types(type_count)
-        return MultiType._all_types(type_count) | MultiType.all_types(type_count - 1)
+            return MultiType._all_types(type_count, include_abilities)
+        return MultiType._all_types(type_count, include_abilities) | MultiType.all_types(type_count - 1, include_abilities)
 
     @cache
     def defense(self) -> Relationship[Type]:

@@ -83,7 +83,7 @@ def test_find_complementary_monotype_team():
 def test_find_complementary_team():
     teams = set()
 
-    for types in itertools.combinations(MultiType.all_types(2), 2):
+    for types in itertools.combinations(MultiType.all_types(2, include_abilities=True), 2):
         team = Team.from_list(types)
         weaknesses = team.weaknesses_count()
         resistances = team.resistances_count()
