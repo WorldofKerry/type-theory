@@ -9,11 +9,8 @@ def test_parse_team_file():
 
     entries = set()
     
-    TEAM_SIZE = 5
-    for types in itertools.combinations(types, TEAM_SIZE):
+    for types in itertools.combinations(types, 4):
         team = Team.from_list(types)
-        if len(team._members) < TEAM_SIZE:
-            continue
         entries.add(evaluate_team(team))
 
     for team in sorted(entries, key=lambda x: x[:-1], reverse=True):

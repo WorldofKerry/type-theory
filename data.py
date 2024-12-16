@@ -46,6 +46,6 @@ def get_all_pokemon_multitypes() -> set[MultiType]:
         except KeyError:
             pass
 
-    return set(MultiType(*types) for types in pokemon.values())
+    return frozenset(MultiType(*types) for types in pokemon.values())
 
-REAL_POKEMON_TYPES: set[MultiType] = get_all_pokemon_multitypes()
+REAL_POKEMON_TYPES: frozenset[MultiType] = get_all_pokemon_multitypes()

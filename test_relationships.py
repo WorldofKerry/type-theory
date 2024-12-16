@@ -117,9 +117,9 @@ def test_find_product_weaknesses_resistances():
 def test_good_team():
     # team = Team(MultiType(Type.FIRE, Type.FLYING), MultiType(Type.ELECTRIC, Type.STEEL), MultiType(Type.DRAGON, Type.FIGHTING))
     # team = Team(MultiType(Type.GRASS, Type.PSYCHIC), MultiType(Type.DRAGON, Type.PSYCHIC), MultiType(Type.GRASS, Type.ICE))
-    team = Team(MultiType(Type.FAIRY, Type.LEVITATE, Type.POISON), MultiType(Type.DRAGON, Type.STEEL))
+    # team = Team(MultiType(Type.FAIRY, Type.LEVITATE, Type.POISON), MultiType(Type.DRAGON, Type.STEEL))
+    team = Team(MultiType(Type.ELECTRIC))
     print(evaluate_team(team))
-    print(MultiType(Type.DRAGON, Type.STEEL).defense())
 
 def compute_product_damage_per_type(team: Team, immunity_multiplier: float) -> dict[Type, float]:
     """
@@ -141,6 +141,9 @@ def compute_weakness_product(team: Team, immunity_multiplier: float = 0.25) -> f
     return weakness_product
 
 def compute_missing_resistance_coverage(team: Team):
+    """
+    Compute how many weaknesses are not covered by resistances
+    """
     weaknesses = team.weaknesses_count()
     resistances = team.resistances_count()
     missed_count = 0
@@ -149,12 +152,23 @@ def compute_missing_resistance_coverage(team: Team):
             missed_count += 1
     return missed_count
 
+def compute_offensive_coverage(team: Team) -> float:
+    """
+    Compute how well each member is able to attack the other types
+    """
+    net_coverage = 0.0
+    for member in team._members:
+        net_coverage += member.attack_coverage(REAL_POKEMON_TYPES).filter(Effectiveness.MORE_EFFECTIVE).__len__()
+        net_coverage -= member.attack_coverage(REAL_POKEMON_TYPES).filter(Effectiveness.LESS_EFFECTIVE).__len__()
+    return net_coverage
+
 def evaluate_team(team: Team) -> tuple[float, ...]:
     missing_resistance_coverage = compute_missing_resistance_coverage(team)
     weakness_product = compute_weakness_product(team)
-    resisted_count = len(team.resistances_count())
-    avg_dmg = team.average_damage(immunity_multiplier=0.25)
-    return (missing_resistance_coverage, weakness_product, -resisted_count, avg_dmg, team)
+    # resisted_count = len(team.resistances_count())
+    # avg_dmg = team.average_damage(immunity_multiplier=0.25)
+    net_coverage = compute_offensive_coverage(team)
+    return (missing_resistance_coverage, weakness_product, -net_coverage, team)
 
 @pytest.mark.skip
 def test_find_best_team():

@@ -37,6 +37,7 @@ class MultiType:
         return f"{self.__class__.__name__}({', '.join(map(str, Type.natural_order(self._types)))})"
 
     def __init__(self, *types: Type) -> MultiType:
+        assert all(isinstance(t, Type) for t in types)
         self._types = frozenset(types)
 
     def __hash__(self):
@@ -46,13 +47,13 @@ class MultiType:
         return isinstance(value, MultiType) and self._types == value._types
 
     @staticmethod
-    def _all_types(type_count: int, include_abilities: bool) -> set[MultiType]:
+    def _all_types(type_count: int, include_abilities: bool) -> frozenset[MultiType]:
         if include_abilities:
-            return {MultiType(*types) for types in combinations(Type, type_count)}
-        return {MultiType(*types) for types in combinations(Type.basic(), type_count)}
+            return frozenset({MultiType(*types) for types in combinations(Type, type_count)})
+        return frozenset({MultiType(*types) for types in combinations(Type.basic(), type_count)})
 
     @staticmethod
-    def all_types(type_count: int = 1, include_less: bool = True, include_abilities: bool = False) -> set[MultiType]:
+    def all_types(type_count: int = 1, include_less: bool = True, include_abilities: bool = False) -> frozenset[MultiType]:
         if not include_less or type_count == 1:
             return MultiType._all_types(type_count, include_abilities)
         return MultiType._all_types(type_count, include_abilities) | MultiType.all_types(type_count - 1, include_abilities)
@@ -70,7 +71,8 @@ class MultiType:
                 type_multipliers[attack_type] *= 2.0 if t in relationship.double_effective else 1.0
         return Relationship(type_multipliers)
 
-    def attack_coverage(self, types: set[MultiType]) -> Relationship[MultiType]:
+    @cache
+    def attack_coverage(self, types: frozenset[MultiType]) -> Relationship[MultiType]:
         type_multipliers = {}
         for t in types:
             type_multipliers[t] = max(
