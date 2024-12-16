@@ -108,6 +108,7 @@ ATTACK_TYPE_CHART = {
         double_effective={Type.NORMAL, Type.ICE, Type.ROCK, Type.DARK, Type.STEEL},
     ),
     Type.POISON: TypeRelationship(
+        no_effect={Type.STEEL},
         half_effective={Type.POISON, Type.GROUND, Type.ROCK, Type.GHOST},
         double_effective={Type.GRASS, Type.FAIRY},
     ),
