@@ -1,6 +1,5 @@
 from __future__ import annotations
 from collections import Counter
-from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cache
 from typing import Callable, Generic, Optional, Sequence, TypeVar
@@ -27,7 +26,6 @@ class Relationship(dict[T, float]):
     def filter(self, func: Callable[[float], bool] | Effectiveness) -> Relationship[T]:
         return Relationship({k: v for k, v in self.items() if func(v)})
 
-@dataclass(frozen=True, init=False)
 class MultiType:
     _types: frozenset[Type]
 
@@ -35,7 +33,14 @@ class MultiType:
         return f"{self.__class__.__name__}({', '.join(map(repr, self._types))})"
 
     def __init__(self, *types: Type) -> MultiType:
-        object.__setattr__(self, "_types", frozenset(types))
+        # object.__setattr__(self, "_types", frozenset(types))
+        self._types = frozenset(types)
+
+    def __hash__(self):
+        return hash(self._types)
+    
+    def __eq__(self, value):
+        return isinstance(value, MultiType) and self._types == value._types
 
     @staticmethod
     def _all_types(type_count: int) -> set[MultiType]:
@@ -78,7 +83,6 @@ class MultiType:
             )
         return Relationship(type_multipliers)
 
-@dataclass(frozen=True, init=False)
 class Team:
     _members: frozenset[MultiType]
 
@@ -90,7 +94,7 @@ class Team:
         return f"{self.__class__.__name__}({', '.join(map(repr, self._members))})"
     
     def __init__(self, *members: MultiType) -> Team:
-        object.__setattr__(self, "_members", frozenset(members))
+        self._members = frozenset(members)
 
     def __hash__(self):
         return hash(self._members)
