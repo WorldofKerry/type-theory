@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cache
-from typing import TypeVar, overload
+from typing import Iterable, TypeVar, overload
 
 T = TypeVar("T")
 
@@ -39,6 +39,11 @@ class Type(Enum):
     def natural_order(value: dict[Type, T]) -> dict[Type, T]:
         ...
 
+    @overload
+    @staticmethod
+    def natural_order(value: Iterable[Type]) -> list[Type]:
+        ...
+
     @staticmethod
     def natural_order(value):
         if isinstance(value, dict):
@@ -47,6 +52,9 @@ class Type(Enum):
                 if t in value:
                     ret[t] = value[t]
             return ret
+        elif isinstance(value, Iterable):
+            return sorted(value, key=lambda x: x.name)
+        raise TypeError(f"Unsupported type {type(value)}")
         
     def __str__(self):
         return self.name.capitalize()

@@ -1,7 +1,8 @@
 from __future__ import annotations
-from collections import Counter
+from collections import Counter, defaultdict
 from enum import Enum, auto
 from functools import cache
+from statistics import geometric_mean
 from typing import Callable, Generic, Optional, Sequence, TypeVar
 from itertools import combinations
 from type_chart import ATTACK_TYPE_CHART, Type
@@ -30,7 +31,7 @@ class MultiType:
     _types: frozenset[Type]
 
     def __repr__(self):
-        return f"{self.__class__.__name__}({', '.join(map(repr, self._types))})"
+        return f"{self.__class__.__name__}({', '.join(map(repr, Type.natural_order(self._types)))})"
 
     def __init__(self, *types: Type) -> MultiType:
         self._types = frozenset(types)
@@ -119,11 +120,14 @@ class Team:
             if multiplier < 1.0
         ))
 
-    def product_weaknesses_resistances(self, immune_weight: float = 0.125) -> dict[Type, float]:
-        ret = {}
+    def average_damage(self, immunity_multiplier: float = 0.0) -> float:
+        """
+        If every team member took 1 damage from every type of attack, what is the average damage taken?
+        """
+        total_damage = 0
         for member in self._members:
-            for attack_type, multiplier in member.defense().items():
+            for _attack_type, multiplier in member.defense().items():
                 if multiplier == 0.0:
-                    multiplier = immune_weight
-                ret[attack_type] = ret.get(attack_type, 1.0) * multiplier
-        return Type.natural_order(ret)
+                    multiplier = immunity_multiplier
+                total_damage += 1 * multiplier
+        return total_damage / len(self._members)

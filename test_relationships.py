@@ -1,5 +1,7 @@
 from collections import defaultdict
 import itertools
+from statistics import geometric_mean
+from typing import Optional
 from data import REAL_POKEMON_TYPES
 from relationships import MultiType, Effectiveness, Team, Type
 
@@ -102,13 +104,41 @@ def test_find_product_weaknesses_resistances():
 
     for types in itertools.combinations(REAL_POKEMON_TYPES, 2):
         team = Team.from_list(types)
-        product = team.product_weaknesses_resistances(immune_weight=1)
-        resist_count = len(team.resistances_count())
-        teams.append((-resist_count, sum(product.values()), team))
 
-    for team in sorted(teams, key=lambda x: x[0], reverse=True):
+        resist_count = len(team.resistances_count())
+        avg = team.average_damage(immunity_multiplier=0.25)
+
+        teams.append((resist_count, avg, team))
+
+    for team in sorted(teams, key=lambda x: (x[1]), reverse=True):
         print(team)
 
 def test_good_team():
     team = Team.from_list((MultiType(Type.STEEL, Type.GHOST), MultiType(Type.LEVITATE, Type.DRAGON, Type.DARK)))
     print(team.resistances_count())
+
+def evaluate_team(team: Team) -> Optional[tuple[float, ...]]:
+    weaknesses = team.weaknesses_count()
+    resistances = team.resistances_count()
+
+    # Skip teams that do not have resistance_count >= weakness_count for each weakness
+    for weakness, weakness_count in weaknesses.items():
+        if weakness not in resistances or resistances[weakness] < weakness_count:
+            return
+
+    # Next evaluate based on average damage taken
+    avg = team.average_damage(immunity_multiplier=0.25)
+
+    return (avg, team)
+
+def test_find_best_team():
+    teams = []
+
+    for types in itertools.combinations(REAL_POKEMON_TYPES, 2):
+        team = Team.from_list(types)
+
+        if result := evaluate_team(team):
+            teams.append(result)
+
+    for team in sorted(teams, key=lambda x: x[:-1]):
+        print(team)
