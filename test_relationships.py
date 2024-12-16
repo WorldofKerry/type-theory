@@ -170,7 +170,7 @@ def evaluate_team(team: Team) -> tuple[float, ...]:
     net_coverage = compute_offensive_coverage(team)
     return (missing_resistance_coverage, weakness_product, -net_coverage, team)
 
-@pytest.mark.skip
+# @pytest.mark.skip
 def test_find_best_team():
     entries = []
     

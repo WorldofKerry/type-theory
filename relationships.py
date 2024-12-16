@@ -74,10 +74,11 @@ class MultiType:
     @cache
     def attack_coverage(self, types: frozenset[MultiType]) -> Relationship[MultiType]:
         type_multipliers = {}
+        offence_types = [t for t in self._types if t in Type.basic()]
         for t in types:
             type_multipliers[t] = max(
                 t.defense()[attack_type]
-                for attack_type in self._types
+                for attack_type in offence_types
             )
         return Relationship(type_multipliers)
 
