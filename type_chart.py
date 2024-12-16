@@ -32,6 +32,9 @@ class Type(Enum):
     LEVITATE = auto()
 
     def __repr__(self):
+        return f"Type.{self.name}"
+
+    def __str__(self):
         return self.name
 
     @overload

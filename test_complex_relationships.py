@@ -1,8 +1,8 @@
 from relationships import MultiType, Type
 
 def test_all_types():
-    assert len(MultiType.all_types()) == len(Type)
-    assert len(MultiType.all_types(2, include_less=False)) == len(Type) * (len(Type) - 1) // 2
+    assert len(MultiType.all_types()) == 18
+    assert len(MultiType.all_types(2, include_less=False)) == 18 * (18 - 1) // 2
 
 def test_attack_type_coverage():
     defense = MultiType.all_types(2)

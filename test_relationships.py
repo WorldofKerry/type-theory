@@ -114,8 +114,28 @@ def test_find_product_weaknesses_resistances():
         print(team)
 
 def test_good_team():
-    team = Team.from_list((MultiType(Type.STEEL, Type.GHOST), MultiType(Type.LEVITATE, Type.DRAGON, Type.DARK)))
-    print(team.resistances_count())
+    team = Team(MultiType(Type.GROUND, Type.WATER), MultiType(Type.ROCK, Type.STEEL), MultiType(Type.BUG, Type.GRASS))
+    weakness_product = compute_weakness_product(team)
+    print(weakness_product)
+
+def compute_product_damage_per_type(team: Team, immunity_multiplier: float = 0.25) -> dict[Type, float]:
+    """
+    E.g. is a 4x weakness to a type complemented by two 2x resistances or a 4x resistance?
+    """
+    member_defences = [member.defense() for member in team._members]
+    type_damages = dict.fromkeys(Type, 1.0)
+    for type in Type:
+        for member_defence in member_defences:
+            type_damages[type] *= member_defence[type] if member_defence[type] != 0.0 else immunity_multiplier
+    return type_damages
+
+def compute_weakness_product(team: Team, immunity_multiplier: float = 0.25) -> float:
+    type_damages = compute_product_damage_per_type(team, immunity_multiplier)
+    weakness_product = 1.0
+    for td in type_damages.values():
+        if td > 1:
+            weakness_product *= td
+    return weakness_product
 
 def evaluate_team(team: Team) -> Optional[tuple[float, ...]]:
     weaknesses = team.weaknesses_count()
@@ -126,19 +146,21 @@ def evaluate_team(team: Team) -> Optional[tuple[float, ...]]:
         if weakness not in resistances or resistances[weakness] < weakness_count:
             return
 
+    weakness_product = compute_weakness_product(team)
+
     # Next evaluate based on average damage taken
     avg = team.average_damage(immunity_multiplier=0.25)
 
-    return (avg, team)
+    return (-weakness_product, avg, team)
 
 def test_find_best_team():
-    teams = []
+    entries = []
 
-    for types in itertools.combinations(REAL_POKEMON_TYPES, 2):
-        team = Team.from_list(types)
+    for types in itertools.combinations(REAL_POKEMON_TYPES, 3):
+        entry = Team.from_list(types)
 
-        if result := evaluate_team(team):
-            teams.append(result)
+        if result := evaluate_team(entry):
+            entries.append(result)
 
-    for team in sorted(teams, key=lambda x: x[:-1]):
-        print(team)
+    for entry in sorted(entries, key=lambda x: x[:-1]):
+        print(repr(entry))

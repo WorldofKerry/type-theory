@@ -33,6 +33,9 @@ class MultiType:
     def __repr__(self):
         return f"{self.__class__.__name__}({', '.join(map(repr, Type.natural_order(self._types)))})"
 
+    def __str__(self):
+        return f"{self.__class__.__name__}({', '.join(map(str, Type.natural_order(self._types)))})"
+
     def __init__(self, *types: Type) -> MultiType:
         self._types = frozenset(types)
 
