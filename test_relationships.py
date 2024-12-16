@@ -1,5 +1,6 @@
 from collections import defaultdict
 import itertools
+from data import REAL_POKEMON_TYPES
 from relationships import MultiType, Effectiveness, Team, Type
 
 def assert_weakness_count(*args, count: int):
@@ -83,7 +84,7 @@ def test_find_complementary_monotype_team():
 def test_find_complementary_team():
     teams = set()
 
-    for types in itertools.combinations(MultiType.all_types(2, include_abilities=True), 2):
+    for types in itertools.combinations(REAL_POKEMON_TYPES, 3):
         team = Team.from_list(types)
         weaknesses = team.weaknesses_count()
         resistances = team.resistances_count()

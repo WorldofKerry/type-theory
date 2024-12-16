@@ -26,7 +26,7 @@ def _parse_abilities() -> dict[int, str]:
     return abilities
 
 @cache
-def get_all_pokemon_multitypes() -> list[MultiType]:
+def get_all_pokemon_multitypes() -> set[MultiType]:
     types = _parse_types()
     abilities = _parse_abilities()
     pokemon: dict[int, set[Type]] = defaultdict(set) # keyed by pokemon id
@@ -46,6 +46,6 @@ def get_all_pokemon_multitypes() -> list[MultiType]:
         except KeyError:
             pass
 
-    return [MultiType(*types) for types in pokemon.values()]
+    return set(MultiType(*types) for types in pokemon.values())
 
-ALL_POKEMON: list[MultiType] = get_all_pokemon_multitypes()
+REAL_POKEMON_TYPES: set[MultiType] = get_all_pokemon_multitypes()
