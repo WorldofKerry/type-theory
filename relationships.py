@@ -80,13 +80,19 @@ class MultiType:
 
 @dataclass(frozen=True, init=False)
 class Team:
-    _members: tuple[MultiType, ...]
+    _members: frozenset[MultiType]
 
     def __repr__(self):
         return f"{self.__class__.__name__}({', '.join(map(repr, self._members))})"
     
     def __init__(self, *members: MultiType) -> Team:
-        object.__setattr__(self, "_members", members)
+        object.__setattr__(self, "_members", frozenset(members))
+
+    def __hash__(self):
+        return hash(self._members)
+    
+    def __eq__(self, value):
+        return isinstance(value, Team) and self._members == value._members
 
     def weaknesses_count(self) -> dict[Type, int]:
         return Type.natural_order(Counter(

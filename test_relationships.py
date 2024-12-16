@@ -1,3 +1,5 @@
+from collections import defaultdict
+import itertools
 from relationships import MultiType, Effectiveness, Team, Type
 
 def assert_weakness_count(*args, count: int):
@@ -47,3 +49,17 @@ def test_team_1():
     assert team.weaknesses_count() == {Type.FIRE: 1, Type.ELECTRIC: 1, Type.GRASS: 1, Type.ICE: 1, Type.POISON: 1, Type.FLYING: 1, Type.BUG: 1}
 
     assert team.resistances_count() == {Type.FIRE: 1, Type.WATER: 2, Type.ELECTRIC: 1, Type.GRASS: 1, Type.ICE: 1, Type.GROUND: 1, Type.STEEL: 1}
+
+def test_find_best_resistances():
+    # teams with each member being mono-type
+    count_to_team = defaultdict(set)
+    
+    for types in itertools.combinations(Type, 2):
+        team = Team(*(MultiType(t) for t in types))
+        resistances = team.resistances_count()
+        count_to_team[len(resistances)].add(team)
+
+    count_to_team = dict(sorted(count_to_team.items(), reverse=True))
+    
+    assert max(count_to_team) == 13
+    assert count_to_team[13] == {Team(MultiType(Type.GRASS), MultiType(Type.STEEL)), Team(MultiType(Type.DRAGON), MultiType(Type.STEEL))}
