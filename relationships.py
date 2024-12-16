@@ -1,10 +1,10 @@
 from __future__ import annotations
+from collections import Counter
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cache
 from typing import Callable, Generic, Optional, TypeVar
 from itertools import combinations
-
 from type_chart import ATTACK_TYPE_CHART, Type
 
 class Effectiveness(Enum):
@@ -77,3 +77,29 @@ class MultiType:
                 for attack_type in self._types
             )
         return Relationship(type_multipliers)
+
+@dataclass(frozen=True, init=False)
+class Team:
+    _members: tuple[MultiType, ...]
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({', '.join(map(repr, self._members))})"
+    
+    def __init__(self, *members: MultiType) -> Team:
+        object.__setattr__(self, "_members", members)
+
+    def weaknesses_count(self) -> dict[Type, int]:
+        return Type.natural_order(Counter(
+            attack_type
+            for member in self._members
+            for attack_type, multiplier in member.defense().items()
+            if multiplier > 1.0
+        ))
+    
+    def resistances_count(self) -> dict[Type, int]:
+        return Type.natural_order(Counter(
+            attack_type
+            for member in self._members
+            for attack_type, multiplier in member.defense().items()
+            if multiplier < 1.0
+        ))

@@ -1,10 +1,13 @@
 """
 Generation 6+ Pokemon Type Chart
 """
+from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cache
-from typing import Optional
+from typing import Optional, TypeVar, overload
+
+T = TypeVar("T")
 
 class Type(Enum):
     NORMAL = auto()
@@ -28,6 +31,20 @@ class Type(Enum):
 
     def __repr__(self):
         return self.name
+
+    @overload
+    @staticmethod
+    def natural_order(value: dict[Type, T]) -> dict[Type, T]:
+        ...
+
+    @staticmethod
+    def natural_order(value):
+        if isinstance(value, dict):
+            ret = {}
+            for t in Type:
+                if t in value:
+                    ret[t] = value[t]
+            return ret
 
 @dataclass(frozen=True)
 class TypeRelationship:

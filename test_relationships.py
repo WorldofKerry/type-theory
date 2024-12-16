@@ -1,4 +1,4 @@
-from relationships import MultiType, Effectiveness, Type
+from relationships import MultiType, Effectiveness, Team, Type
 
 def assert_weakness_count(*args, count: int):
     relationships = MultiType(*args).defense()
@@ -37,3 +37,13 @@ def test_select_weaknesses():
 
 def test_immunities():
     assert MultiType(Type.GRASS, Type.FAIRY).defense().filter(Effectiveness.NO_EFFECT).keys() == {Type.DRAGON}
+
+def test_team_1():
+    team = Team(
+        MultiType(Type.WATER),
+        MultiType(Type.GRASS),
+    )
+
+    assert team.weaknesses_count() == {Type.FIRE: 1, Type.ELECTRIC: 1, Type.GRASS: 1, Type.ICE: 1, Type.POISON: 1, Type.FLYING: 1, Type.BUG: 1}
+
+    assert team.resistances_count() == {Type.FIRE: 1, Type.WATER: 2, Type.ELECTRIC: 1, Type.GRASS: 1, Type.ICE: 1, Type.GROUND: 1, Type.STEEL: 1}
