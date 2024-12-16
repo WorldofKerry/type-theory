@@ -8,7 +8,12 @@ from type_chart import Type
 
 def parse_team_file(file_path: str) -> list[MultiType]:
     with open(file_path) as f:
-        lines = f.readlines()
+        return parse_team(f.read())
+
+def parse_team(team: str) -> list[MultiType]:
+    lines = team.split("\n")
+
+    print(lines)
 
     member_types = list()
     prev_blank = True
@@ -31,7 +36,7 @@ def parse_team_file(file_path: str) -> list[MultiType]:
                 pass
 
         # Delimiter for next pokemon
-        if line == "\n":
+        if line.strip() == "":
             member_types.append(MultiType(*current_types))
             current_types = set()
             prev_blank = True
