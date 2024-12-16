@@ -12,8 +12,9 @@ def parse_team_file(file_path: str) -> list[MultiType]:
 
 def parse_team(team: str) -> list[MultiType]:
     lines = team.split("\n")
-
-    print(lines)
+    
+    while lines[0].strip() == "":
+        lines = lines[1:]
 
     member_types = list()
     prev_blank = True
@@ -37,8 +38,12 @@ def parse_team(team: str) -> list[MultiType]:
 
         # Delimiter for next pokemon
         if line.strip() == "":
+            assert current_types, "No types found for pokemon"
             member_types.append(MultiType(*current_types))
             current_types = set()
             prev_blank = True
+
+    if current_types:
+        member_types.append(MultiType(*current_types))
 
     return member_types
