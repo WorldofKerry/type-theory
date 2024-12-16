@@ -55,11 +55,42 @@ def test_find_best_resistances():
     count_to_team = defaultdict(set)
     
     for types in itertools.combinations(Type, 2):
-        team = Team(*(MultiType(t) for t in types))
+        team = Team.from_list(MultiType(t) for t in types)
         resistances = team.resistances_count()
         count_to_team[len(resistances)].add(team)
 
     count_to_team = dict(sorted(count_to_team.items(), reverse=True))
     
-    assert max(count_to_team) == 13
+    assert max(count_to_team.keys()) == 13
     assert count_to_team[13] == {Team(MultiType(Type.GRASS), MultiType(Type.STEEL)), Team(MultiType(Type.DRAGON), MultiType(Type.STEEL))}
+
+def test_find_complementary_monotype_team():
+    teams = set()
+
+    for types in itertools.combinations(Type, 3):
+        team = Team.from_list(MultiType(t) for t in types)
+        weaknesses = team.weaknesses_count()
+        resistances = team.resistances_count()
+        for weakness in weaknesses:
+            if weakness not in resistances:
+                break
+        else:
+            teams.add(team)
+
+    print(teams)
+
+def test_find_complementary_team():
+    teams = set()
+
+    for types in itertools.combinations(MultiType.all_types(2), 2):
+        team = Team.from_list(types)
+        weaknesses = team.weaknesses_count()
+        resistances = team.resistances_count()
+        for weakness in weaknesses:
+            if weakness not in resistances:
+                break
+        else:
+            teams.add(team)
+
+    for team in teams:
+        print(team)

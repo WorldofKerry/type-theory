@@ -3,7 +3,7 @@ from collections import Counter
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from functools import cache
-from typing import Callable, Generic, Optional, TypeVar
+from typing import Callable, Generic, Optional, Sequence, TypeVar
 from itertools import combinations
 from type_chart import ATTACK_TYPE_CHART, Type
 
@@ -81,6 +81,10 @@ class MultiType:
 @dataclass(frozen=True, init=False)
 class Team:
     _members: frozenset[MultiType]
+
+    @classmethod
+    def from_list(cls, types: Sequence[MultiType]) -> Team:
+        return cls(*types)
 
     def __repr__(self):
         return f"{self.__class__.__name__}({', '.join(map(repr, self._members))})"
