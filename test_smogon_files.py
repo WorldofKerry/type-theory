@@ -4,6 +4,8 @@ from smogon_files import parse_team_file
 
 def test_parse_team_file():
     types = parse_team_file("team.txt")
+    print(types)
+
     teams = set()
 
     for ts in itertools.combinations(types, 6):

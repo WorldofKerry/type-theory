@@ -32,8 +32,7 @@ def parse_team_file(file_path: str) -> list[MultiType]:
 
         # Delimiter for next pokemon
         if line == "\n":
-            # member_types.append(MultiType(*current_types))
-            print(current_types)
+            member_types.append(MultiType(*current_types))
             current_types = set()
             prev_blank = True
 
