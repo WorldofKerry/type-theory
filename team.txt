@@ -1,3 +1,69 @@
+Corphish (M) @ Mystic Water
+IVs: 4 HP / 17 Atk / 10 Def / 13 SpA / 27 SpD / 1 Spe
+EVs: 9 HP / 11 Atk / 6 Def / 4 SpA / 3 SpD / 13 Spe
+Ability: Shell Armor
+Level: 28
+Naive Nature
+- Bubble Beam
+- Protect
+- Vise Grip
+- Rock Smash
+
+Slugma (M) @ Charcoal
+IVs: 14 HP / 21 Atk / 17 Def / 20 SpA / 9 SpD / 5 Spe
+EVs: 5 HP / 7 Atk / 2 Def / 5 SpA / 3 SpD / 2 Spe
+Ability: Magma Armor
+Level: 28
+Sassy Nature
+- Smog
+- Flame Burst
+- Rock Throw
+- Recover
+
+Carnivine (M) @ Miracle Seed
+IVs: 15 HP / 4 Atk / 0 Def / 19 SpA / 23 SpD / 22 Spe
+EVs: 5 Atk / 3 Def / 4 SpA / 5 SpD / 3 Spe
+Ability: Levitate
+Level: 26
+Quirky Nature
+- Bite
+- Vine Whip
+- Frustration
+- Ingrain
+
+Rotom @ Leftovers
+IVs: 7 HP / 24 Def / 0 SpA / 23 SpD / 28 Spe
+EVs: 1 HP / 10 Atk / 12 Def / 9 SpA / 4 SpD / 8 Spe
+Ability: Levitate
+Level: 34
+Docile Nature
+- Ominous Wind
+- Uproar
+- Double Team
+- Shock Wave
+
+Ariados (M) @ Quick Claw
+IVs: 15 HP / 24 Atk / 30 Def / 20 SpA / 3 SpD / 5 Spe
+EVs: 7 HP / 7 Atk / 5 Def / 10 SpA / 7 SpD / 17 Spe
+Ability: Swarm
+Level: 31
+Mild Nature
+- Venoshock
+- Shadow Sneak
+- Leech Life
+- Thief
+
+Graveler (M) @ Zoom Lens
+IVs: 4 HP / 2 Atk / 5 Def / 27 SpA / 22 SpD / 7 Spe
+EVs: 17 HP / 16 Atk / 8 Def / 14 SpA / 6 SpD / 18 Spe
+Ability: Rock Head
+Level: 31
+Modest Nature
+- Smack Down
+- Rock Blast
+- Dig
+- Rock Polish
+
 Minccino (F)
 IVs: 3 HP / 2 Atk / 2 Def / 26 SpA / 21 SpD / 26 Spe
 EVs: 10 HP / 6 Atk / 3 Def / 2 SpA / 3 SpD / 10 Spe
