@@ -33,7 +33,6 @@ class MultiType:
         return f"{self.__class__.__name__}({', '.join(map(repr, self._types))})"
 
     def __init__(self, *types: Type) -> MultiType:
-        # object.__setattr__(self, "_types", frozenset(types))
         self._types = frozenset(types)
 
     def __hash__(self):
