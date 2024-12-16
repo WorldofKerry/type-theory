@@ -45,6 +45,13 @@ class Type(Enum):
                 if t in value:
                     ret[t] = value[t]
             return ret
+        
+    def __str__(self):
+        return self.name.capitalize()
+    
+    @classmethod
+    def from_str(cls, value: str) -> Type:
+        return cls[value.upper()]
 
 @dataclass(frozen=True)
 class TypeRelationship:
