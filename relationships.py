@@ -115,6 +115,7 @@ class Team:
             if multiplier > 1.0
         ))
     
+    @cache
     def resistances_count(self) -> dict[Type, int]:
         return Type.natural_order(Counter(
             attack_type

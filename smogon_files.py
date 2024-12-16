@@ -6,17 +6,17 @@ from pokeapi_api import get_type
 from relationships import MultiType, Team
 from type_chart import Type
 
-def parse_team_file(file_path: str) -> list[MultiType]:
+def parse_team_file(file_path: str) -> set[MultiType]:
     with open(file_path) as f:
         return parse_team(f.read())
 
-def parse_team(team: str) -> list[MultiType]:
+def parse_team(team: str) -> set[MultiType]:
     lines = team.split("\n")
     
     while lines[0].strip() == "":
         lines = lines[1:]
 
-    member_types = list()
+    member_types = set()
     prev_blank = True
 
     current_types = set()
@@ -39,11 +39,11 @@ def parse_team(team: str) -> list[MultiType]:
         # Delimiter for next pokemon
         if line.strip() == "":
             assert current_types, "No types found for pokemon"
-            member_types.append(MultiType(*current_types))
+            member_types.add(MultiType(*current_types))
             current_types = set()
             prev_blank = True
 
     if current_types:
-        member_types.append(MultiType(*current_types))
+        member_types.add(MultiType(*current_types))
 
     return member_types

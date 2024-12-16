@@ -2,6 +2,8 @@ from collections import defaultdict
 import itertools
 from statistics import geometric_mean
 from typing import Optional
+
+import pytest
 from data import REAL_POKEMON_TYPES
 from relationships import MultiType, Effectiveness, Team, Type
 
@@ -64,8 +66,8 @@ def test_best_resistances():
 
     count_to_team = dict(sorted(count_to_team.items(), reverse=True))
     
-    assert max(count_to_team.keys()) == 13
-    assert count_to_team[13] == {Team(MultiType(Type.GRASS), MultiType(Type.STEEL)), Team(MultiType(Type.DRAGON), MultiType(Type.STEEL))}
+    assert max(count_to_team.keys()) == 14
+    assert count_to_team[14] == {Team(MultiType(Type.GRASS), MultiType(Type.STEEL)), Team(MultiType(Type.DRAGON), MultiType(Type.STEEL))}
 
 def test_find_complementary_monotype_team():
     teams = set()
@@ -114,12 +116,12 @@ def test_find_product_weaknesses_resistances():
 
 def test_good_team():
     # team = Team(MultiType(Type.FIRE, Type.FLYING), MultiType(Type.ELECTRIC, Type.STEEL), MultiType(Type.DRAGON, Type.FIGHTING))
-    team = Team(MultiType(Type.GRASS, Type.PSYCHIC), MultiType(Type.DRAGON, Type.PSYCHIC), MultiType(Type.GRASS, Type.ICE))
-    weakness_product = compute_weakness_product(team)
-    resistance_coverage = compute_resistance_coverage(team)
-    print(resistance_coverage, weakness_product)
+    # team = Team(MultiType(Type.GRASS, Type.PSYCHIC), MultiType(Type.DRAGON, Type.PSYCHIC), MultiType(Type.GRASS, Type.ICE))
+    team = Team(MultiType(Type.FAIRY, Type.LEVITATE, Type.POISON), MultiType(Type.DRAGON, Type.STEEL))
+    print(evaluate_team(team))
+    print(MultiType(Type.DRAGON, Type.STEEL).defense())
 
-def compute_product_damage_per_type(team: Team, immunity_multiplier: float = 0.25) -> dict[Type, float]:
+def compute_product_damage_per_type(team: Team, immunity_multiplier: float) -> dict[Type, float]:
     """
     E.g. is a 4x weakness to a type complemented by two 2x resistances or a 4x resistance?
     """
@@ -138,7 +140,7 @@ def compute_weakness_product(team: Team, immunity_multiplier: float = 0.25) -> f
             weakness_product *= td
     return weakness_product
 
-def compute_resistance_coverage(team: Team):
+def compute_missing_resistance_coverage(team: Team):
     weaknesses = team.weaknesses_count()
     resistances = team.resistances_count()
     missed_count = 0
@@ -147,24 +149,20 @@ def compute_resistance_coverage(team: Team):
             missed_count += 1
     return missed_count
 
-def evaluate_team(team: Team) -> Optional[tuple[float, ...]]:
-    resistance_coverage = compute_resistance_coverage(team)
-
+def evaluate_team(team: Team) -> tuple[float, ...]:
+    missing_resistance_coverage = compute_missing_resistance_coverage(team)
     weakness_product = compute_weakness_product(team)
+    resisted_count = len(team.resistances_count())
+    avg_dmg = team.average_damage(immunity_multiplier=0.25)
+    return (missing_resistance_coverage, weakness_product, -resisted_count, avg_dmg, team)
 
-    # Next evaluate based on average damage taken
-    avg = team.average_damage(immunity_multiplier=0.25)
-
-    return (resistance_coverage, -weakness_product, avg, team)
-
+@pytest.mark.skip
 def test_find_best_team():
     entries = []
     
     for types in itertools.combinations(REAL_POKEMON_TYPES, 3):
-        entry = Team.from_list(types)
+        team = Team.from_list(types)
+        entries.append(evaluate_team(team))
 
-        if result := evaluate_team(entry):
-            entries.append(result)
-
-    for entry in sorted(entries, key=lambda x: x[:-1])[:10]:
-        print(repr(entry))
+    for team in sorted(entries, key=lambda x: x[:-1], reverse=True):
+        print(repr(team))

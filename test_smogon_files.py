@@ -1,25 +1,23 @@
 import itertools
 from relationships import Team
 from smogon_files import parse_team, parse_team_file
+from test_relationships import evaluate_team
 from type_chart import Type
 
 def test_parse_team_file():
     types = parse_team_file("team.txt")
 
-    teams = set()
+    entries = set()
+    
+    TEAM_SIZE = 5
+    for types in itertools.combinations(types, TEAM_SIZE):
+        team = Team.from_list(types)
+        if len(team._members) < TEAM_SIZE:
+            continue
+        entries.add(evaluate_team(team))
 
-    for ts in itertools.combinations(types, 6):
-        team = Team.from_list(ts)
-        weaknesses = team.weaknesses_count()
-        resistances = team.resistances_count()
-        for weakness, count in weaknesses.items():
-            if weakness not in resistances or count > resistances[weakness] + 1:
-                break
-        else:
-            teams.add(team)
-
-    for team in teams:
-        print(team)
+    for team in sorted(entries, key=lambda x: x[:-1], reverse=True):
+        print(repr(team))
 
 def test_parse_team_txt():
     txt = """
