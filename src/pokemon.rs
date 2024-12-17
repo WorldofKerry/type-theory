@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use rand::seq::SliceRandom;
 use strum::IntoEnumIterator;
 
 use crate::typing::{combine_defense_charts, get_multitype_defense_chart, Ability, BasicType, Relationship, Type, TypeTrait};
@@ -46,6 +47,19 @@ impl Pokemon {
 
     pub fn all_no_abilities() -> impl Iterator<Item = Pokemon> {
         Typing::all().map(|t| Pokemon { typing: t, ability: None })
+    }
+
+    pub fn random(pool: &Vec<Pokemon>) -> Pokemon {
+        let mut rng = rand::thread_rng();
+        pool.choose(&mut rng).unwrap().clone()
+    }
+
+    pub fn find_resistance_complements(&self, pool: &Vec<Pokemon>) -> Vec<Pokemon> {
+        let def = self.defense();
+        pool.iter().filter(move |p| {
+            let compl_def = p.defense();
+            !def.iter().any(|(t, r)| *r > 1.0 && compl_def.get(*t) >= 1.0)
+        }).cloned().collect()
     }
 }
 

@@ -1,33 +1,8 @@
-use crate::{pokemon::{self, Pokemon}, typing::combine_defense_charts_immune};
+use crate::{pokemon::{self, Pokemon}, team::Team, typing::{combine_defense_charts_immune, BasicType, TypeTrait}};
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
 use strum::IntoEnumIterator;
-use std::{collections::{BTreeMap, HashMap}, mem::uninitialized};
-use crate::{pokemon::Typing, typing::{Ability, BasicType, Relationship, TypeTrait}};
-use itertools::Itertools;
-
-#[derive(Clone, Debug)]
-struct Team {
-    pub pokemon: Vec<Pokemon>,
-}
-
-impl Team {
-    fn all(pool: impl Iterator<Item = Pokemon>, size: usize) -> impl Iterator<Item = Team> {
-        pool.combinations(size).map(move |team| Team { pokemon: team.into_iter().map(|p| p.clone()).collect()})
-    }
-
-    fn random(pool: impl Iterator<Item = Pokemon>, size: usize) -> Team {
-        let pokemon = pool.collect::<Vec<_>>();
-        let mut rng = rand::thread_rng();
-        let team = (0..size).map(|_| pokemon.choose(&mut rng).unwrap().clone()).collect();
-        Team { pokemon: team }
-    }
-
-    fn fill_random(&self, pool: impl Iterator<Item = Pokemon>, size: usize) -> Team {
-        let missing = size - self.pokemon.len();
-        Team { pokemon: Team::random(pool, missing).pokemon.into_iter().chain(self.pokemon.iter().map(|p| p.clone())).collect() }
-    }
-}
+use std::{collections::{BTreeMap, HashMap}};
 
 fn resistance_coverage(team: &Team) -> i32 {
     let mut score = 0;
@@ -65,13 +40,16 @@ fn resistance_coverage(team: &Team) -> i32 {
 #[cfg(test)]
 mod test {
     use std::i32;
+    use itertools::all;
+    use pokemon::Typing;
+
     use super::*;
 
     #[test]
     fn get_best_team() {
         let mut max_score = i32::MIN;
         loop {
-            let team = Team::random(Pokemon::all_no_abilities(), 4);
+            let team = Team::random(Pokemon::all_no_abilities(), 6);
             let score = resistance_coverage(&team);
             if score >= max_score {
                 println!("{score:?} {team:?}");
@@ -105,5 +83,13 @@ mod test {
                 max_score = score;
             }
         }
+    }
+
+    #[test]
+    fn find_poke_complement() {
+        // Given a pokemon, find all pokemon that resist all of its weaknesses
+        let ludicolo = Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None };
+        let complements = ludicolo.find_resistance_complements(&Pokemon::all_no_abilities().collect());
+        println!("{complements:?}");
     }
 }
