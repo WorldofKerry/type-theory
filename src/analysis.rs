@@ -12,15 +12,20 @@ struct Team {
 }
 
 impl Team {
-    fn all(size: usize) -> impl Iterator<Item = Team> {
-        Pokemon::all_no_abilities().combinations(size).map(move |team| Team { pokemon: team.into_iter().map(|p| p.clone()).collect()})
+    fn all(pool: impl Iterator<Item = Pokemon>, size: usize) -> impl Iterator<Item = Team> {
+        pool.combinations(size).map(move |team| Team { pokemon: team.into_iter().map(|p| p.clone()).collect()})
     }
 
-    fn random(size: usize) -> Team {
-        let pokemon = Pokemon::all_no_abilities().collect::<Vec<_>>();
+    fn random(pool: impl Iterator<Item = Pokemon>, size: usize) -> Team {
+        let pokemon = pool.collect::<Vec<_>>();
         let mut rng = rand::thread_rng();
         let team = (0..size).map(|_| pokemon.choose(&mut rng).unwrap().clone()).collect();
         Team { pokemon: team }
+    }
+
+    fn fill_random(&self, pool: impl Iterator<Item = Pokemon>, size: usize) -> Team {
+        let missing = size - self.pokemon.len();
+        Team { pokemon: Team::random(pool, missing).pokemon.into_iter().chain(self.pokemon.iter().map(|p| p.clone())).collect() }
     }
 }
 
@@ -66,7 +71,7 @@ mod test {
     fn get_best_team() {
         let mut max_score = i32::MIN;
         loop {
-            let team = Team::random(6);
+            let team = Team::random(Pokemon::all_no_abilities(), 4);
             let score = resistance_coverage(&team);
             if score >= max_score {
                 println!("{score:?} {team:?}");
@@ -84,5 +89,21 @@ mod test {
         ]};
         let score = resistance_coverage(&team);
         println!("{score:?} {team:?}");
+    }
+
+    #[test]
+    fn complementary_members() {
+        let fixed_team = Team { pokemon: vec![
+            Pokemon { typing: Typing::Dual(BasicType::Dragon, BasicType::Ground), ability: None },
+        ]};
+        let mut max_score = i32::MIN;
+        loop {
+            let team = fixed_team.fill_random(Pokemon::all_no_abilities(), 3);
+            let score = resistance_coverage(&team);
+            if score >= max_score {
+                println!("{score:?} {team:?}");
+                max_score = score;
+            }
+        }
     }
 }
