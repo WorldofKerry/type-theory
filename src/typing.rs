@@ -34,50 +34,59 @@ pub enum Type {
 }
 
 impl TypeTrait for BasicType {
-    fn get_defense(&self) -> HashMap<BasicType, f32> {
-        get_defense_chart().get(&Type::Basic(*self)).unwrap().clone()
+    fn get_defense(&self) -> Relationship {
+        Relationship::from_raw_parts(get_defense_chart().get(&Type::Basic(*self)).unwrap().clone())
     }
 }
 
 impl TypeTrait for Ability {
-    fn get_defense(&self) -> HashMap<BasicType, f32> {
-        get_defense_chart().get(&Type::Ability(*self)).unwrap().clone()
+    fn get_defense(&self) -> Relationship {
+        Relationship::from_raw_parts(get_defense_chart().get(&Type::Ability(*self)).unwrap().clone())
     }
 }
 
 pub trait TypeTrait {
-    fn get_defense(&self) -> HashMap<BasicType, f32>;
+    fn get_defense(&self) -> Relationship;
 }
 
 impl TypeTrait for Type {
-    fn get_defense(&self) -> HashMap<BasicType, f32> {
+    fn get_defense(&self) -> Relationship {
         match self {
-            Type::Basic(basic_type) => basic_type.get_defense(),
-            Type::Ability(ability) => ability.get_defense(),
+            Type::Basic(t) => t.get_defense(),
+            Type::Ability(a) => a.get_defense(),
         }
     }
 }
 
-pub fn combine_defense_charts(charts: Vec<HashMap<BasicType, f32>>) -> HashMap<BasicType, f32> {
-    let mut defense_chart = HashMap::new();
+#[derive(Clone, Debug, PartialEq)]
+pub struct Relationship {
+    inner: HashMap<BasicType, f32>
+}
+
+impl Relationship {
+    fn from_raw_parts(inner: HashMap<BasicType, f32>) -> Self {
+        let mut ret = Relationship { inner };
+        ret.inner.retain(|_, v| *v != 1.0);
+        ret
+    }
+    pub fn get(&self, key: BasicType) -> f32 {
+        *self.inner.get(&key).unwrap_or(&1.0)
+    }
+}
+
+pub fn combine_defense_charts(charts: impl IntoIterator<Item = Relationship>) -> Relationship {
+    let mut combined_chart = HashMap::new();
     for chart in charts {
-        for (basic_type, multiplier) in chart {
-            let entry = defense_chart.entry(basic_type).or_insert(1.0);
+        for (basic_type, multiplier) in chart.inner {
+            let entry = combined_chart.entry(basic_type).or_insert(1.0);
             *entry *= multiplier;
         }
     }
-    // Remove 1.0 multipliers
-    defense_chart.retain(|_, v| *v != 1.0);
-    defense_chart
+    Relationship::from_raw_parts(combined_chart)
 }
 
-pub fn get_multitype_defense_chart(types: Vec<&Type>) -> HashMap<BasicType, f32> {
-    let mut defense_chart = HashMap::new();
-    for t in types {
-        let chart = t.get_defense();
-        defense_chart = combine_defense_charts(vec![defense_chart, chart]);
-    }
-    defense_chart
+pub fn get_multitype_defense_chart<'a>(types: impl Iterator<Item = &'a Type>) -> Relationship {
+    combine_defense_charts(types.map(|t| t.get_defense()))
 }
 
 fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
