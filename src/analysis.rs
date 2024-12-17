@@ -1,7 +1,8 @@
 use crate::{pokemon::{self, Pokemon}, typing::combine_defense_charts_immune};
 use rand::seq::SliceRandom;
 use rayon::prelude::*;
-use std::{collections::HashMap, mem::uninitialized};
+use strum::IntoEnumIterator;
+use std::{collections::{BTreeMap, HashMap}, mem::uninitialized};
 use crate::{pokemon::Typing, typing::{Ability, BasicType, Relationship, TypeTrait}};
 use itertools::Itertools;
 
@@ -23,52 +24,65 @@ impl Team {
     }
 }
 
-/// Checks the number of pokemon on the team that has another pokemon that resists all of its weaknesses
 fn resistance_coverage(team: &Team) -> i32 {
-    let combined_charts = combine_defense_charts_immune(team.pokemon.iter().map(|p| p.defense()), 0.25);
-    let mut count = 0;
-    for (_, v) in combined_charts.iter() {
-        if *v > 1.0 {
-            count -= 1 * 100000000;
+    let mut score = 0;
+    let combined = combine_defense_charts_immune(team.pokemon.iter().map(|p| p.defense()), 0.25);
+    let mut weakness_count: BTreeMap<BasicType, i32> = BTreeMap::new();
+    let mut resistance_count: BTreeMap<BasicType, i32> = BTreeMap::new();
+    for t in BasicType::iter() {
+        weakness_count.insert(t, 0);
+        resistance_count.insert(t, 0);
+    }
+    for p in &team.pokemon {
+        let defense = p.defense();
+        for (t, r) in defense.iter() {
+            if *r > 1.0 {
+                *weakness_count.get_mut(&t).unwrap() += 1;
+            } else if *r < 1.0 {
+                *resistance_count.get_mut(&t).unwrap() += 1;
+            }
         }
     }
-    for (_, v) in combined_charts.iter() {
-        if *v < 1.0 {
-            count += 1;
+    let mut table = BTreeMap::new();
+    for t in BasicType::iter() {
+        table.insert(t, combined.get(t) * combined.get(t) * weakness_count[&t] as f32 / resistance_count[&t] as f32);
+    }
+    for (t, r) in combined.iter() {
+        if *r > 1.0 {
+            score -= 2
+        } else if *r < 1.0 {
+            score += 1
         }
     }
-    count
+    score
 }
 
 #[cfg(test)]
 mod test {
+    use std::i32;
     use super::*;
 
     #[test]
-    fn get_best_defensive_pokemon() {
-        let teams = Team::all(2).collect::<Vec<_>>();
-        let mut results = teams.into_par_iter().map(|team| (team.clone(), resistance_coverage(&team))).collect::<Vec<_>>();
-
-        results.sort_by(|(_, a), (_, b)| b.cmp(a));
-
-        // print top 10
-        for (team, score) in results.into_iter().take(10) {
-            println!("Score: {}", score);
-            for p in team.pokemon {
-                println!("{:?}", p);
+    fn get_best_team() {
+        let mut max_score = i32::MIN;
+        loop {
+            let team = Team::random(3);
+            let score = resistance_coverage(&team);
+            if score >= max_score {
+                println!("{score:?} {team:?}");
+                max_score = score;
             }
-            println!();
         }
     }
 
     #[test]
-    fn get_best_team() {
-        loop {
-            let team = Team::random(3);
-            let score = resistance_coverage(&team);
-            if score >= 14 {
-                println!("{score:?} {team:?}");
-            }
-        }
+    fn specific_team() {
+        let team = Team { pokemon: vec![
+            Pokemon { typing: Typing::Dual(BasicType::Fire, BasicType::Ground), ability: None },
+            Pokemon { typing: Typing::Dual(BasicType::Steel, BasicType::Flying), ability: None },
+            Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None },
+        ]};
+        let score = resistance_coverage(&team);
+        println!("{score:?} {team:?}");
     }
 }
