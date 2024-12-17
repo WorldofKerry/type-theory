@@ -1,0 +1,2 @@
+mod pokemon;
+mod typing;
