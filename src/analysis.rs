@@ -89,7 +89,7 @@ mod test {
     fn find_poke_complement() {
         // Given a pokemon, find all pokemon that resist all of its weaknesses
         let ludicolo = Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None };
-        let complements = ludicolo.find_resistance_complements(&Pokemon::all_no_abilities().collect());
+        let complements = ludicolo.find_resistance_complements(Pokemon::all_no_abilities());
         println!("{complements:?}");
     }
 }
