@@ -15,7 +15,7 @@ impl Typing {
         BasicType::iter().map(Typing::Mono)
     }
     fn dual() -> impl Iterator<Item = Typing> {
-        BasicType::iter().flat_map(|t1| BasicType::iter().map(move |t2| Typing::Dual(t1, t2)))
+        BasicType::iter().flat_map(|t1| BasicType::iter().filter(move |t2| t1 != *t2).map(move |t2| Typing::Dual(t1, t2)))
     }
     fn all() -> impl Iterator<Item = Typing> {
         Typing::mono().chain(Typing::dual())
@@ -42,6 +42,10 @@ impl Pokemon {
         // All monotype/dualtype and ability combinations
         Typing::all().flat_map(|t| Ability::iter().map(move |a| Pokemon { typing: t.clone(), ability: Some(a) }))
             .chain(Typing::all().map(|t| Pokemon { typing: t, ability: None }))
+    }
+
+    pub fn all_no_abilities() -> impl Iterator<Item = Pokemon> {
+        Typing::all().map(|t| Pokemon { typing: t, ability: None })
     }
 }
 

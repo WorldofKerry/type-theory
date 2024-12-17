@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::ops::Deref;
 use strum::IntoEnumIterator;
 use strum::EnumIter;
 
@@ -73,6 +74,14 @@ pub struct Relationship {
     inner: BTreeMap<BasicType, f32>
 }
 
+impl Deref for Relationship {
+    type Target = BTreeMap<BasicType, f32>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
+
 impl Relationship {
     fn from_raw_parts(inner: BTreeMap<BasicType, f32>) -> Self {
         let mut ret = Relationship { inner };
@@ -89,6 +98,18 @@ pub fn combine_defense_charts(charts: impl IntoIterator<Item = Relationship>) ->
     for chart in charts {
         for (basic_type, multiplier) in chart.inner {
             let entry = combined_chart.entry(basic_type).or_insert(1.0);
+            *entry *= multiplier;
+        }
+    }
+    Relationship::from_raw_parts(combined_chart)
+}
+
+pub fn combine_defense_charts_immune(charts: impl IntoIterator<Item = Relationship>, immune_multiplier: f32) -> Relationship {
+    let mut combined_chart = BTreeMap::new();
+    for chart in charts {
+        for (basic_type, multiplier) in chart.inner {
+            let entry = combined_chart.entry(basic_type).or_insert(1.0);
+            let multiplier = if *entry == 0.0 { immune_multiplier } else { multiplier };
             *entry *= multiplier;
         }
     }
