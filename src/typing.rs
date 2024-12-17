@@ -1,6 +1,9 @@
-use std::collections::HashMap;
+use std::vec;
+use std::{collections::HashMap, iter::FlatMap};
+use strum::IntoEnumIterator;
+use strum::EnumIter;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter)]
 pub enum BasicType {
     Normal,
     Fire,
@@ -22,7 +25,7 @@ pub enum BasicType {
     Fairy,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter)]
 pub enum Ability {
     Levitate,
 }
@@ -33,27 +36,35 @@ pub enum Type {
     Ability(Ability),
 }
 
+impl IntoEnumIterator for Type {
+    type Iterator = std::vec::IntoIter<Self>;
+
+    fn iter() -> Self::Iterator {
+        BasicType::iter().map(Type::Basic).chain(Ability::iter().map(Type::Ability)).collect::<Vec<_>>().into_iter()
+    }
+}
+
 impl TypeTrait for BasicType {
-    fn get_defense(&self) -> Relationship {
+    fn defense(&self) -> Relationship {
         Relationship::from_raw_parts(get_defense_chart().get(&Type::Basic(*self)).unwrap().clone())
     }
 }
 
 impl TypeTrait for Ability {
-    fn get_defense(&self) -> Relationship {
+    fn defense(&self) -> Relationship {
         Relationship::from_raw_parts(get_defense_chart().get(&Type::Ability(*self)).unwrap().clone())
     }
 }
 
 pub trait TypeTrait {
-    fn get_defense(&self) -> Relationship;
+    fn defense(&self) -> Relationship;
 }
 
 impl TypeTrait for Type {
-    fn get_defense(&self) -> Relationship {
+    fn defense(&self) -> Relationship {
         match self {
-            Type::Basic(t) => t.get_defense(),
-            Type::Ability(a) => a.get_defense(),
+            Type::Basic(t) => t.defense(),
+            Type::Ability(a) => a.defense(),
         }
     }
 }
@@ -86,7 +97,7 @@ pub fn combine_defense_charts(charts: impl IntoIterator<Item = Relationship>) ->
 }
 
 pub fn get_multitype_defense_chart<'a>(types: impl Iterator<Item = &'a Type>) -> Relationship {
-    combine_defense_charts(types.map(|t| t.get_defense()))
+    combine_defense_charts(types.map(|t| t.defense()))
 }
 
 fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
