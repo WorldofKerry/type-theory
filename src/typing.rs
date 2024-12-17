@@ -66,6 +66,8 @@ pub fn combine_defense_charts(charts: Vec<HashMap<BasicType, f32>>) -> HashMap<B
             *entry *= multiplier;
         }
     }
+    // Remove 1.0 multipliers
+    defense_chart.retain(|_, v| *v != 1.0);
     defense_chart
 }
 
