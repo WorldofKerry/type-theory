@@ -32,17 +32,16 @@ impl TypeTrait for Typing {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-struct Pokemon {
+pub struct Pokemon {
     typing: Typing,
     ability: Option<Ability>,
 }
 
 impl Pokemon {
-    fn all() -> impl Iterator<Item = Pokemon> {
+    pub fn all() -> impl Iterator<Item = Pokemon> {
         // All monotype/dualtype and ability combinations
-        Typing::all().flat_map(|t| {
-            Ability::iter().map(move |a| Pokemon { typing: t.clone(), ability: Some(a) })
-        }).chain(Typing::all().map(|t| Pokemon { typing: t, ability: None }))
+        Typing::all().flat_map(|t| Ability::iter().map(move |a| Pokemon { typing: t.clone(), ability: Some(a) }))
+            .chain(Typing::all().map(|t| Pokemon { typing: t, ability: None }))
     }
 }
 
