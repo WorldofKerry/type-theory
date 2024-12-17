@@ -66,7 +66,7 @@ mod test {
     fn get_best_team() {
         let mut max_score = i32::MIN;
         loop {
-            let team = Team::random(3);
+            let team = Team::random(6);
             let score = resistance_coverage(&team);
             if score >= max_score {
                 println!("{score:?} {team:?}");
