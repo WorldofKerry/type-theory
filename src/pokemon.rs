@@ -5,7 +5,7 @@ use strum::IntoEnumIterator;
 use crate::typing::{combine_defense_charts, get_multitype_defense_chart, Ability, BasicType, Relationship, Type, TypeTrait};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-enum Typing {
+pub enum Typing {
     Mono(BasicType),
     Dual(BasicType, BasicType),
 }
@@ -33,8 +33,8 @@ impl TypeTrait for Typing {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Pokemon {
-    typing: Typing,
-    ability: Option<Ability>,
+    pub typing: Typing,
+    pub ability: Option<Ability>,
 }
 
 impl Pokemon {

@@ -1,9 +1,8 @@
-use std::vec;
-use std::{collections::HashMap, iter::FlatMap};
+use std::collections::BTreeMap;
 use strum::IntoEnumIterator;
 use strum::EnumIter;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd)]
 pub enum BasicType {
     Normal,
     Fire,
@@ -25,12 +24,12 @@ pub enum BasicType {
     Fairy,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd)]
 pub enum Ability {
     Levitate,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub enum Type {
     Basic(BasicType),
     Ability(Ability),
@@ -71,11 +70,11 @@ impl TypeTrait for Type {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Relationship {
-    inner: HashMap<BasicType, f32>
+    inner: BTreeMap<BasicType, f32>
 }
 
 impl Relationship {
-    fn from_raw_parts(inner: HashMap<BasicType, f32>) -> Self {
+    fn from_raw_parts(inner: BTreeMap<BasicType, f32>) -> Self {
         let mut ret = Relationship { inner };
         ret.inner.retain(|_, v| *v != 1.0);
         ret
@@ -86,7 +85,7 @@ impl Relationship {
 }
 
 pub fn combine_defense_charts(charts: impl IntoIterator<Item = Relationship>) -> Relationship {
-    let mut combined_chart = HashMap::new();
+    let mut combined_chart = BTreeMap::new();
     for chart in charts {
         for (basic_type, multiplier) in chart.inner {
             let entry = combined_chart.entry(basic_type).or_insert(1.0);
@@ -100,18 +99,18 @@ pub fn get_multitype_defense_chart<'a>(types: impl Iterator<Item = &'a Type>) ->
     combine_defense_charts(types.map(|t| t.defense()))
 }
 
-fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
-    HashMap::from([
+fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
+    BTreeMap::from([
         (
             Type::Basic(BasicType::Normal),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fighting), 2.0),
                 ((BasicType::Ghost), 0.0),
             ]),
         ),
         (
             Type::Basic(BasicType::Fire),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fire), 0.5),
                 ((BasicType::Water), 2.0),
                 ((BasicType::Grass), 0.5),
@@ -125,7 +124,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Water),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fire), 0.5),
                 ((BasicType::Water), 0.5),
                 ((BasicType::Electric), 2.0),
@@ -136,7 +135,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Electric),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Electric), 0.5),
                 ((BasicType::Ground), 2.0),
                 ((BasicType::Flying), 0.5),
@@ -145,7 +144,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Grass),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fire), 2.0),
                 ((BasicType::Water), 0.5),
                 ((BasicType::Electric), 0.5),
@@ -159,7 +158,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Ice),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fire), 2.0),
                 ((BasicType::Ice), 0.5),
                 ((BasicType::Fighting), 2.0),
@@ -169,7 +168,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Fighting),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Flying), 2.0),
                 ((BasicType::Psychic), 2.0),
                 ((BasicType::Bug), 0.5),
@@ -180,7 +179,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Poison),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Grass), 0.5),
                 ((BasicType::Fighting), 0.5),
                 ((BasicType::Poison), 0.5),
@@ -192,7 +191,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Ground),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Water), 2.0),
                 ((BasicType::Electric), 0.0),
                 ((BasicType::Grass), 2.0),
@@ -203,7 +202,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Flying),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Electric), 2.0),
                 ((BasicType::Grass), 0.5),
                 ((BasicType::Ice), 2.0),
@@ -215,7 +214,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Psychic),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fighting), 0.5),
                 ((BasicType::Psychic), 0.5),
                 ((BasicType::Bug), 2.0),
@@ -225,7 +224,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Bug),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fire), 2.0),
                 ((BasicType::Grass), 0.5),
                 ((BasicType::Fighting), 0.5),
@@ -236,7 +235,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Rock),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Normal), 0.5),
                 ((BasicType::Fire), 0.5),
                 ((BasicType::Water), 2.0),
@@ -249,7 +248,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Ghost),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Normal), 0.0),
                 ((BasicType::Psychic), 0.0),
                 ((BasicType::Poison), 0.5),
@@ -260,7 +259,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Dragon),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fire), 0.5),
                 ((BasicType::Water), 0.5),
                 ((BasicType::Electric), 0.5),
@@ -272,7 +271,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Dark),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fighting), 2.0),
                 ((BasicType::Psychic), 0.0),
                 ((BasicType::Bug), 2.0),
@@ -283,7 +282,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Steel),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Normal), 0.5),
                 ((BasicType::Fire), 2.0),
                 ((BasicType::Grass), 0.5),
@@ -302,7 +301,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Basic(BasicType::Fairy),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Fighting), 0.5),
                 ((BasicType::Poison), 2.0),
                 ((BasicType::Bug), 0.5),
@@ -313,7 +312,7 @@ fn get_defense_chart() -> HashMap<Type, HashMap<BasicType, f32>> {
         ),
         (
             Type::Ability(Ability::Levitate),
-            HashMap::from([
+            BTreeMap::from([
                 ((BasicType::Ground), 0.0),
             ]),
         )
