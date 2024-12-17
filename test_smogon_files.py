@@ -9,7 +9,7 @@ def test_parse_team_file():
 
     entries = set()
     
-    for types in itertools.combinations(types, 4):
+    for types in itertools.combinations(types, 6):
         team = Team.from_list(types)
         entries.add(evaluate_team(team))
 
