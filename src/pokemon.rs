@@ -54,12 +54,16 @@ impl Pokemon {
         pool.choose(&mut rng).unwrap().clone()
     }
 
+    pub fn is_resistance_complement(&self, other: &Pokemon) -> bool {
+        let self_def = self.defense();
+        let other_def = other.defense();
+        // Not any weakness not resisted
+        !self_def.iter().any(|(t, r)| *r > 1.0 && other_def.get(*t) >= 1.0)
+    }
+
     pub fn find_resistance_complements(&self, pool: impl Iterator<Item = Pokemon>) -> Vec<Pokemon> {
-        let def = self.defense();
         pool.filter(move |p| {
-            let compl_def = p.defense();
-            // Not any weakness not resisted
-            !def.iter().any(|(t, r)| *r > 1.0 && compl_def.get(*t) >= 1.0)
+            self.is_resistance_complement(p)
         }).collect()
     }
 }

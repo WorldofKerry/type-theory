@@ -4,7 +4,7 @@ use rayon::prelude::*;
 use strum::IntoEnumIterator;
 use std::{collections::{BTreeMap, HashMap}};
 
-fn resistance_coverage(team: &Team) -> i32 {
+fn score_resistance(team: &Team) -> i32 {
     let mut score = 0;
     let combined = combine_defense_charts_immune(team.pokemon.iter().map(|p| p.defense()), 0.25);
     let mut weakness_count: BTreeMap<BasicType, i32> = BTreeMap::new();
@@ -37,9 +37,52 @@ fn resistance_coverage(team: &Team) -> i32 {
     score
 }
 
+fn create_compl_team(p: &Pokemon, pool: &Vec<Pokemon>, iterations: usize, team_size: usize) -> Option<Team> {
+    // Given a pokemon, recursively find new pokemon with resistance complements
+    let mut team_scores = HashMap::new();
+    for _ in 0..iterations {
+        let mut members = vec![p.clone()];
+
+        // Find a complement chain
+        for _ in 1..team_size-1 {
+            let complements = members.last().unwrap().find_resistance_complements(pool.clone().into_iter());
+            if complements.is_empty() {
+                break;
+            }
+            let new_member = complements.choose(&mut rand::thread_rng()).unwrap().clone();
+            members.push(new_member);
+        }
+
+        // Last iteration, find a complement that not only resists the second last member, but is resisted by the first member
+        let complements = members.last().unwrap().find_resistance_complements(pool.clone().into_iter());
+        if complements.is_empty() {
+            continue;
+        }
+        for compl in complements {
+            if compl.is_resistance_complement(&members[0]) {
+                members.push(compl);
+                break;
+            }
+        }
+
+        if members.len() == team_size {
+            let team = Team { pokemon: members };
+            let score = score_resistance(&team);
+            println!("{score:?} {team:?}");
+            team_scores.insert(score, team);
+        }
+    }
+    if team_scores.is_empty() {
+        None
+    } else {
+        let max_score = *team_scores.keys().max().unwrap();
+        Some(team_scores.remove(&max_score).unwrap())
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use std::i32;
+    use std::{i32, usize};
     use itertools::all;
     use pokemon::Typing;
 
@@ -50,7 +93,7 @@ mod test {
         let mut max_score = i32::MIN;
         loop {
             let team = Team::random(Pokemon::all_no_abilities(), 6);
-            let score = resistance_coverage(&team);
+            let score = score_resistance(&team);
             if score >= max_score {
                 println!("{score:?} {team:?}");
                 max_score = score;
@@ -65,7 +108,7 @@ mod test {
             Pokemon { typing: Typing::Dual(BasicType::Steel, BasicType::Flying), ability: None },
             Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None },
         ]};
-        let score = resistance_coverage(&team);
+        let score = score_resistance(&team);
         println!("{score:?} {team:?}");
     }
 
@@ -77,7 +120,7 @@ mod test {
         let mut max_score = i32::MIN;
         loop {
             let team = fixed_team.fill_random(Pokemon::all_no_abilities(), 3);
-            let score = resistance_coverage(&team);
+            let score = score_resistance(&team);
             if score >= max_score {
                 println!("{score:?} {team:?}");
                 max_score = score;
@@ -91,5 +134,12 @@ mod test {
         let ludicolo = Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None };
         let complements = ludicolo.find_resistance_complements(Pokemon::all_no_abilities());
         println!("{complements:?}");
+    }
+
+    #[test]
+    fn create_compl_team_test() {
+        let pool = Pokemon::all_no_abilities().collect::<Vec<_>>();
+        let team = create_compl_team(&Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None }, &pool, usize::MAX, 6);
+        print!("{team:?}");
     }
 }
