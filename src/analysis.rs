@@ -62,11 +62,11 @@ fn create_complement_matrix(pool: &Vec<Pokemon>) -> HashMap<Pokemon, HashMap<Pok
         result
             .entry(p1.clone())
             .or_insert(HashMap::new())
-            .insert(p2.clone(), p1.resistance_complements(p2));
+            .insert(p2.clone(), resistance_complements(p1, p2));
         result
             .entry(p2.clone())
             .or_insert(HashMap::new())
-            .insert(p1.clone(), p2.resistance_complements(p1));
+            .insert(p1.clone(), resistance_complements(p2, p1));
     }
     result
 }
@@ -123,6 +123,56 @@ fn create_compl_team(
     Team { pokemon: best_team }
 }
 
+pub fn resistance_complements(poke1: &Pokemon, poke2: &Pokemon) -> i32 {
+    // How well poke1 resists weaknesses of poke2
+    // Higher is better
+    const IMMUNITY_LOG: i32 = -2; // treat immunity as 1/8 resistance
+    let poke1_def = poke1.defense();
+    let poke2_def = poke2.defense();
+    let mut score = 0;
+    for t in BasicType::iter() {
+        let r1 = if poke1_def.get(t) == 0.0 {
+            IMMUNITY_LOG
+        } else {
+            poke1_def.get(t).log2() as i32
+        };
+        let r2 = if poke2_def.get(t) == 0.0 {
+            IMMUNITY_LOG
+        } else {
+            poke2_def.get(t).log2() as i32
+        };
+        if r2 > 0 {
+            // println!("{t:?} {r1:?} {r2:?}");
+            if r1 > 0 {
+                match (r2, r1) {
+                    (2, 2) => score -= 4,
+                    (1, 2) => score -= 3,
+                    (2, 1) => score -= 2,
+                    (1, 1) => score -= 1,
+                    _ => panic!("{r1:?} {r2:?}"),
+                }
+            } else {
+                score -= r1;
+            }
+        }
+    }
+    score
+}
+
+pub fn resistance_connector(
+    poke1: &Pokemon,
+    poke2: &Pokemon,
+    pool: &Vec<Pokemon>,
+) -> Vec<(Pokemon, i32, i32)> {
+    pool.iter()
+        .map(|poke3| {
+            let score1 = resistance_complements(poke3, poke1);
+            let score2 = resistance_complements(poke2, poke3);
+            (poke3.clone(), score1, score2)
+        })
+        .collect()
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -141,8 +191,8 @@ mod test {
             typing: Typing::Dual(BasicType::Ground, BasicType::Fire),
             ability: None,
         };
-        assert_eq!(ludicolo.resistance_complements(&primal_groundon), 2);
-        assert_eq!(primal_groundon.resistance_complements(&ludicolo), 1);
+        assert_eq!(resistance_complements(&ludicolo, &primal_groundon), 2);
+        assert_eq!(resistance_complements(&primal_groundon, &ludicolo), 1);
         let matrix = create_complement_matrix(&vec![ludicolo, primal_groundon]);
         println!("{matrix:?}");
     }
@@ -274,19 +324,62 @@ mod test {
     }
 
     #[test]
-    fn find_poke_complement() {
+    fn find_complements() {
+        use BasicType::*;
         let poke = Pokemon {
-            typing: (BasicType::Water).into(),
+            typing: (Water).into(),
             ability: None,
         };
-        let complements =
-            poke.find_resistance_complements(Pokemon::all_type_combinations_and_abilities());
-        complements
+        Pokemon::all()
             .into_iter()
-            .map(|p| (p.clone(), poke.resistance_complements(&p)))
-            .filter(|(_, score)| *score > -1)
+            .map(|p| (p.clone(), resistance_complements(&poke, &p)))
+            .unique()
+            .filter(|(_, score)| *score >= 2)
             .for_each(|p| {
                 println!("{:?}", p);
             });
+    }
+
+    #[test]
+    fn find_complemented() {
+        use BasicType::*;
+        let poke = Pokemon {
+            typing: (Grass, Ice).into(),
+            ability: None,
+        };
+        // vec![Pokemon {
+        //     typing: (Poison, Ghost).into(),
+        //     ability: None,
+        // }]
+        Pokemon::all()
+        .into_iter()
+        .map(|p| (p.clone(), resistance_complements(&p, &poke)))
+        .unique()
+        .filter(|(_, score)| *score >= -50)
+        .sorted_by(|(_, s1), (_, s2)| s1.cmp(s2))
+        .for_each(|p| {
+            println!("{:?}", p);
+        });
+    }
+
+    #[test]
+    fn find_best_connector_test() {
+        use BasicType::*;
+        let pool = Pokemon::all_type_combinations_and_abilities().collect::<Vec<_>>();
+        let connections = resistance_connector(
+            &Pokemon {
+                typing: (Water).into(),
+                ability: None,
+            },
+            &Pokemon {
+                typing: (Ground, Flying).into(),
+                ability: None,
+            },
+            &pool,
+        )
+        .into_iter()
+        .for_each(|(p, s1, s2)| {
+            println!("{p:?} {s1:?} {s2:?}");
+        });
     }
 }

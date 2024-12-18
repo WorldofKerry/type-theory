@@ -271,7 +271,7 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
             Type::Basic(BasicType::Ghost),
             BTreeMap::from([
                 ((BasicType::Normal), 0.0),
-                ((BasicType::Psychic), 0.0),
+                ((BasicType::Fighting), 0.0),
                 ((BasicType::Poison), 0.5),
                 ((BasicType::Bug), 0.5),
                 ((BasicType::Ghost), 2.0),
