@@ -66,6 +66,24 @@ impl Pokemon {
             self.is_resistance_complement(p)
         }).collect()
     }
+
+    pub fn resistance_complements(&self, other: &Pokemon) -> i32 {
+        // How well self complements other in terms of resistance
+        let self_def = self.defense();
+        let other_def = other.defense();
+        let mut score = 0;
+        for (t, v1) in other_def.iter() {
+            if *v1 > 1.0 {
+                let v2 = self_def.get(*t);
+                if v2 < 1.0 {
+                    score += 1;
+                } else {
+                    score -= 1;
+                }
+            }
+        }
+        score
+    }
 }
 
 impl TypeTrait for Pokemon {

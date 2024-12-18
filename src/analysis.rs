@@ -1,5 +1,6 @@
 use crate::{pokemon::{self, Pokemon}, team::Team, typing::{combine_defense_charts_immune, BasicType, TypeTrait}};
-use rand::seq::SliceRandom;
+use itertools::Itertools;
+use rand::{seq::SliceRandom, Rng};
 use rayon::prelude::*;
 use strum::IntoEnumIterator;
 use std::{collections::{BTreeMap, HashMap}};
@@ -37,47 +38,51 @@ fn score_resistance(team: &Team) -> i32 {
     score
 }
 
-fn create_compl_team(p: &Pokemon, pool: &Vec<Pokemon>, iterations: usize, team_size: usize) -> Option<Team> {
-    // Given a pokemon, recursively find new pokemon with resistance complements
-    let mut team_scores = HashMap::new();
+fn create_complement_matrix(pool: &Vec<Pokemon>) -> HashMap<Pokemon, HashMap<Pokemon, i32>> {
+    let mut result: HashMap<Pokemon, HashMap<Pokemon, i32>> = HashMap::new();
+    let combinations = pool.iter().combinations(2);
+    for combination in combinations {
+        let (p1, p2) = (combination[0], combination[1]);
+        result.entry(p1.clone()).or_insert(HashMap::new()).insert(p2.clone(), p1.resistance_complements(p2));
+        result.entry(p2.clone()).or_insert(HashMap::new()).insert(p1.clone(), p2.resistance_complements(p1));
+    }
+    result
+}
+
+fn create_compl_team(pokemon: &Pokemon, pool: &Vec<Pokemon>, iterations: usize, team_size: usize) -> Team {
+    let mut team: Vec<Pokemon> = vec![pokemon.clone()].into_iter().chain(Team::random(pool.into_iter().cloned(), team_size - 1).pokemon).collect();
+    let mut best_team = team.clone();
+    let mut best_score = score_resistance(& Team { pokemon: team.clone() });
     for _ in 0..iterations {
-        let mut members = vec![p.clone()];
-
-        // Find a complement chain
-        for _ in 1..team_size-1 {
-            let complements = members.last().unwrap().find_resistance_complements(pool.clone().into_iter());
-            if complements.is_empty() {
-                break;
-            }
-            let new_member = complements.choose(&mut rand::thread_rng()).unwrap().clone();
-            members.push(new_member);
-        }
-
-        // Last iteration, find a complement that not only resists the second last member, but is resisted by the first member
-        let complements = members.last().unwrap().find_resistance_complements(pool.clone().into_iter());
-        if complements.is_empty() {
-            continue;
-        }
-        for compl in complements {
-            if compl.is_resistance_complement(&members[0]) {
-                members.push(compl);
-                break;
+        let matrix = create_complement_matrix(&team);
+        // 80% chance remove worst complement teammate
+        // 20% change remove random teammate
+        let mut rng = rand::thread_rng();
+        let remove_worst = rng.gen_bool(0.8);
+        if remove_worst {
+            let worst = team.iter().filter(|p| *p != pokemon)
+                .min_by_key(|p| matrix[p].values().sum::<i32>()).unwrap().clone();
+            let i = team.iter().position(|p| *p == worst).unwrap();
+            team.remove(i);
+        } else {
+            while team.len() == team_size {
+                let random = rng.gen_range(0..team.len());
+                team.remove(random);
+                if !team.contains(pokemon) {
+                    team.push(pokemon.clone());
+                }
             }
         }
-
-        if members.len() == team_size {
-            let team = Team { pokemon: members };
-            let score = score_resistance(&team);
+        team.push(Pokemon::random(&pool.iter().cloned().collect()));
+        let score = score_resistance(& Team { pokemon: team.clone() });
+        if score > best_score {
+            best_score = score;
+            best_team = team.clone();
             println!("{score:?} {team:?}");
-            team_scores.insert(score, team);
         }
     }
-    if team_scores.is_empty() {
-        None
-    } else {
-        let max_score = *team_scores.keys().max().unwrap();
-        Some(team_scores.remove(&max_score).unwrap())
-    }
+    println!("{best_score:?} {best_team:?}");
+    Team { pokemon: best_team }
 }
 
 #[cfg(test)]
@@ -85,8 +90,18 @@ mod test {
     use std::{i32, usize};
     use itertools::all;
     use pokemon::Typing;
-
+    use rayon::vec;
     use super::*;
+
+    #[test]
+    fn create_complement_matrix_test() {
+        let ludicolo = Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None };
+        let primal_groundon = Pokemon { typing: Typing::Dual(BasicType::Ground, BasicType::Fire), ability: None };
+        assert_eq!(ludicolo.resistance_complements(&primal_groundon), 2);
+        assert_eq!(primal_groundon.resistance_complements(&ludicolo), 1);
+        let matrix = create_complement_matrix(&vec![ludicolo, primal_groundon]);
+        println!("{matrix:?}");
+    }
 
     #[test]
     fn get_best_team() {
@@ -139,7 +154,7 @@ mod test {
     #[test]
     fn create_compl_team_test() {
         let pool = Pokemon::all_no_abilities().collect::<Vec<_>>();
-        let team = create_compl_team(&Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None }, &pool, usize::MAX, 6);
+        let team = create_compl_team(&Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None }, &pool, 10000, 6);
         print!("{team:?}");
     }
 }
