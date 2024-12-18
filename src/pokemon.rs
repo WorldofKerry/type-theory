@@ -14,6 +14,18 @@ pub enum Typing {
     Dual(BasicType, BasicType),
 }
 
+impl Into<Typing> for BasicType {
+    fn into(self) -> Typing {
+        Typing::Mono(self)
+    }
+}
+
+impl Into<Typing> for (BasicType, BasicType) {
+    fn into(self) -> Typing {
+        Typing::Dual(self.0, self.1)
+    }
+}
+
 impl Typing {
     fn mono() -> impl Iterator<Item = Typing> {
         BasicType::iter().map(Typing::Mono)
@@ -108,12 +120,7 @@ impl Pokemon {
     }
 
     pub fn is_resistance_complement(&self, other: &Pokemon) -> bool {
-        let self_def = self.defense();
-        let other_def = other.defense();
-        // Not any weakness not resisted
-        !self_def
-            .iter()
-            .any(|(t, r)| *r > 1.0 && other_def.get(*t) >= 1.0)
+        other.resistance_complements(self) > 0
     }
 
     pub fn find_resistance_complements(&self, pool: impl Iterator<Item = Pokemon>) -> Vec<Pokemon> {
