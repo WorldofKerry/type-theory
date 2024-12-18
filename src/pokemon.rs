@@ -1,9 +1,12 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 
 use rand::seq::SliceRandom;
 use strum::IntoEnumIterator;
 
-use crate::typing::{combine_defense_charts, get_multitype_defense_chart, Ability, BasicType, Relationship, Type, TypeTrait};
+use crate::typing::{
+    combine_defense_charts, get_multitype_defense_chart, Ability, BasicType, Relationship, Type,
+    TypeTrait,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Typing {
@@ -16,7 +19,11 @@ impl Typing {
         BasicType::iter().map(Typing::Mono)
     }
     fn dual() -> impl Iterator<Item = Typing> {
-        BasicType::iter().flat_map(|t1| BasicType::iter().filter(move |t2| t1 != *t2).map(move |t2| Typing::Dual(t1, t2)))
+        BasicType::iter().flat_map(|t1| {
+            BasicType::iter()
+                .filter(move |t2| t1 != *t2)
+                .map(move |t2| Typing::Dual(t1, t2))
+        })
     }
     fn all() -> impl Iterator<Item = Typing> {
         Typing::mono().chain(Typing::dual())
@@ -39,14 +46,60 @@ pub struct Pokemon {
 }
 
 impl Pokemon {
-    pub fn all() -> impl Iterator<Item = Pokemon> {
-        // All monotype/dualtype and ability combinations
-        Typing::all().flat_map(|t| Ability::iter().map(move |a| Pokemon { typing: t.clone(), ability: Some(a) }))
-            .chain(Typing::all().map(|t| Pokemon { typing: t, ability: None }))
+    pub fn all() -> Vec<Pokemon> {
+        // dexnum,name,generation,type1,type2,species,height,weight,ability1,ability2,hidden_ability,hp,attack,defense,sp_atk,sp_def,speed,total,ev_yield,catch_rate,base_friendship,base_exp,growth_rate,egg_group1,egg_group2,percent_male,percent_female,egg_cycles,special_group
+        let file = "data/pokemon_data.csv"; // https://www.kaggle.com/datasets/guavocado/pokemon-stats-1025-pokemons
+
+        let mut rdr = csv::Reader::from_path(file).unwrap();
+        rdr.records()
+            .flat_map(|r| {
+                let record = r.unwrap();
+                let typing = match record.get(4).unwrap() {
+                    "" => Typing::Mono(BasicType::from_str(record.get(3).unwrap()).unwrap()),
+                    t => Typing::Dual(
+                        BasicType::from_str(record.get(3).unwrap()).unwrap(),
+                        BasicType::from_str(t).unwrap(),
+                    ),
+                };
+                let abilities: Vec<Option<Ability>> = vec![
+                    record.get(8).unwrap(),
+                    record.get(9).unwrap(),
+                    record.get(10).unwrap(),
+                ].into_iter().map(|a| match a {
+                    "" => None,
+                    a => match Ability::from_str(a) {
+                        Ok(a) => Some(a),
+                        Err(_) => None,
+                    },
+                }).collect();
+                abilities.into_iter().map(move |a| Pokemon {
+                    typing: typing.clone(),
+                    ability: a,
+                })
+            })
+            .collect()
     }
 
-    pub fn all_no_abilities() -> impl Iterator<Item = Pokemon> {
-        Typing::all().map(|t| Pokemon { typing: t, ability: None })
+    pub fn all_type_combinations() -> impl Iterator<Item = Pokemon> {
+        // All monotype/dualtype and ability combinations
+        Typing::all()
+            .flat_map(|t| {
+                Ability::iter().map(move |a| Pokemon {
+                    typing: t.clone(),
+                    ability: Some(a),
+                })
+            })
+            .chain(Typing::all().map(|t| Pokemon {
+                typing: t,
+                ability: None,
+            }))
+    }
+
+    pub fn all_type_combinations_and_abilities() -> impl Iterator<Item = Pokemon> {
+        Typing::all().map(|t| Pokemon {
+            typing: t,
+            ability: None,
+        })
     }
 
     pub fn random(pool: &Vec<Pokemon>) -> Pokemon {
@@ -58,13 +111,14 @@ impl Pokemon {
         let self_def = self.defense();
         let other_def = other.defense();
         // Not any weakness not resisted
-        !self_def.iter().any(|(t, r)| *r > 1.0 && other_def.get(*t) >= 1.0)
+        !self_def
+            .iter()
+            .any(|(t, r)| *r > 1.0 && other_def.get(*t) >= 1.0)
     }
 
     pub fn find_resistance_complements(&self, pool: impl Iterator<Item = Pokemon>) -> Vec<Pokemon> {
-        pool.filter(move |p| {
-            self.is_resistance_complement(p)
-        }).collect()
+        pool.filter(move |p| self.is_resistance_complement(p))
+            .collect()
     }
 
     pub fn resistance_complements(&self, other: &Pokemon) -> i32 {
@@ -119,5 +173,11 @@ mod tests {
         assert_eq!(defense_chart.get(BasicType::Bug), 0.5);
         assert_eq!(defense_chart.get(BasicType::Rock), 0.5);
         assert_eq!(defense_chart.get(BasicType::Steel), 0.5);
+    }
+
+    #[test]
+    fn all_pokemon() {
+        let all = Pokemon::all();
+        println!("{:?}", all[0..500].to_vec());
     }
 }

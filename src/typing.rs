@@ -1,9 +1,10 @@
 use std::collections::BTreeMap;
 use std::ops::Deref;
+use strum::EnumString;
 use strum::IntoEnumIterator;
 use strum::EnumIter;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd, EnumString)]
 pub enum BasicType {
     Normal,
     Fire,
@@ -25,7 +26,7 @@ pub enum BasicType {
     Fairy,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd, EnumString)]
 pub enum Ability {
     Levitate,
 }

@@ -107,7 +107,7 @@ mod test {
     fn get_best_team() {
         let mut max_score = i32::MIN;
         loop {
-            let team = Team::random(Pokemon::all_no_abilities(), 6);
+            let team = Team::random(Pokemon::all_type_combinations_and_abilities(), 6);
             let score = score_resistance(&team);
             if score >= max_score {
                 println!("{score:?} {team:?}");
@@ -134,7 +134,7 @@ mod test {
         ]};
         let mut max_score = i32::MIN;
         loop {
-            let team = fixed_team.fill_random(Pokemon::all_no_abilities(), 3);
+            let team = fixed_team.fill_random(Pokemon::all_type_combinations_and_abilities(), 3);
             let score = score_resistance(&team);
             if score >= max_score {
                 println!("{score:?} {team:?}");
@@ -147,13 +147,13 @@ mod test {
     fn find_poke_complement() {
         // Given a pokemon, find all pokemon that resist all of its weaknesses
         let ludicolo = Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None };
-        let complements = ludicolo.find_resistance_complements(Pokemon::all_no_abilities());
+        let complements = ludicolo.find_resistance_complements(Pokemon::all_type_combinations_and_abilities());
         println!("{complements:?}");
     }
 
     #[test]
     fn create_compl_team_test() {
-        let pool = Pokemon::all_no_abilities().collect::<Vec<_>>();
+        let pool = Pokemon::all_type_combinations_and_abilities().collect::<Vec<_>>();
         let team = create_compl_team(&Pokemon { typing: Typing::Dual(BasicType::Grass, BasicType::Water), ability: None }, &pool, 10000, 6);
         print!("{team:?}");
     }
