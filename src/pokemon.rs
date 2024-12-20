@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeSet, HashMap},
+    collections::{BTreeSet, HashMap, HashSet},
     str::FromStr,
 };
 
@@ -12,52 +12,36 @@ use crate::typing::{
     TypeTrait,
 };
 
-#[derive(Clone, Debug, Eq, Hash)]
-pub enum Typing {
-    Mono(BasicType),
-    Dual(BasicType, BasicType),
-}
-
-impl PartialEq for Typing {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Typing::Mono(t1), Typing::Mono(t2)) => t1 == t2,
-            (Typing::Dual(t1, t2), Typing::Dual(t3, t4)) => (t1 == t3 && t2 == t4) || (t1 == t4 && t2 == t3),
-            _ => false,
-        }
-    }
-}
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Hash)]
+pub struct Typing(BTreeSet<BasicType>);
 
 impl Typing {
     pub fn contains(&self, t: BasicType) -> bool {
-        match self {
-            Typing::Mono(t1) => t == *t1,
-            Typing::Dual(t1, t2) => t == *t1 || t == *t2,
-        }
+        self.0.contains(&t)
     }
 }
 
-impl Into<Typing> for BasicType {
-    fn into(self) -> Typing {
-        Typing::Mono(self)
+impl From <BasicType> for Typing {
+    fn from(t: BasicType) -> Typing {
+        Typing(BTreeSet::from_iter(vec![t]))
     }
 }
 
-impl Into<Typing> for (BasicType, BasicType) {
-    fn into(self) -> Typing {
-        Typing::Dual(self.0, self.1)
+impl From <(BasicType, BasicType)> for Typing {
+    fn from(t: (BasicType, BasicType)) -> Typing {
+        Typing(BTreeSet::from_iter(vec![t.0, t.1]))
     }
 }
 
 impl Typing {
     fn mono() -> impl Iterator<Item = Typing> {
-        BasicType::iter().map(Typing::Mono)
+        BasicType::iter().map(Typing::from)
     }
     fn dual() -> impl Iterator<Item = Typing> {
         BasicType::iter().flat_map(|t1| {
             BasicType::iter()
                 .filter(move |t2| t1 != *t2)
-                .map(move |t2| Typing::Dual(t1, t2))
+                .map(move |t2| Typing::from((t1, t2)))
         })
     }
     fn all() -> impl Iterator<Item = Typing> {
@@ -67,14 +51,15 @@ impl Typing {
 
 impl TypeTrait for Typing {
     fn defense(&self) -> Relationship {
-        match self {
-            Typing::Mono(t) => t.defense(),
-            Typing::Dual(t1, t2) => combine_defense_charts(vec![t1.defense(), t2.defense()]),
+        match self.0.iter().collect::<Vec<_>>().as_slice() {
+            [t] => t.defense(),
+            [t1, t2] => combine_defense_charts(vec![t1.defense(), t2.defense()]),
+            _ => panic!("Invalid typing"),
         }
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Pokemon {
     pub typing: Typing,
     pub ability: Option<Ability>,
@@ -83,7 +68,7 @@ pub struct Pokemon {
 impl From<BasicType> for Pokemon {
     fn from(t: BasicType) -> Pokemon {
         Pokemon {
-            typing: Typing::Mono(t),
+            typing: t.into(),
             ability: None,
         }
     }
@@ -92,7 +77,7 @@ impl From<BasicType> for Pokemon {
 impl From<(BasicType, BasicType)> for Pokemon {
     fn from(t: (BasicType, BasicType)) -> Pokemon {
         Pokemon {
-            typing: Typing::Dual(t.0, t.1),
+            typing: t.into(),
             ability: None,
         }
     }
@@ -108,11 +93,11 @@ impl Pokemon {
             .flat_map(|r| {
                 let record = r.unwrap();
                 let typing = match record.get(4).unwrap() {
-                    "" => Typing::Mono(BasicType::from_str(record.get(3).unwrap()).unwrap()),
-                    t => Typing::Dual(
+                    "" => Typing::from(BasicType::from_str(record.get(3).unwrap()).unwrap()),
+                    t => Typing::from((
                         BasicType::from_str(record.get(3).unwrap()).unwrap(),
                         BasicType::from_str(t).unwrap(),
-                    ),
+                    )),
                 };
                 let abilities: Vec<Option<Ability>> = vec![
                     record.get(8).unwrap(),
@@ -175,12 +160,16 @@ impl TypeTrait for Pokemon {
 
 #[cfg(test)]
 mod tests {
+    use std::{collections::HashSet, hash::{Hash, Hasher}};
+
+    use crate::pokemon;
+
     use super::*;
 
     #[test]
     fn test_get_defense() {
         let duraludon = Pokemon {
-            typing: Typing::Dual(BasicType::Dragon, BasicType::Steel),
+            typing: (BasicType::Dragon, BasicType::Steel).into(),
             ability: None,
         };
         println!("{:?}", BasicType::Dragon.defense());
@@ -200,8 +189,15 @@ mod tests {
     }
 
     #[test]
-    fn all_pokemon() {
-        let all = Pokemon::all();
-        println!("{:?}", all[0..500].to_vec());
+    fn equality_test() {
+        use BasicType::*;
+        let poke1 = Pokemon::from((Steel, Flying));
+        let poke2 = Pokemon::from((Flying, Steel));
+        assert_eq!(poke1, poke2);
+        let mut hasher1 = std::hash::DefaultHasher::new();
+        let mut hasher2 = std::hash::DefaultHasher::new();
+        poke1.hash(&mut hasher1);
+        poke2.hash(&mut hasher2);
+        assert_eq!(hasher1.finish(), hasher2.finish());
     }
 }

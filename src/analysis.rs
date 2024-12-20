@@ -183,144 +183,13 @@ mod test {
 
     #[test]
     fn create_complement_matrix_test() {
-        let ludicolo = Pokemon {
-            typing: Typing::Dual(BasicType::Grass, BasicType::Water),
-            ability: None,
-        };
-        let primal_groundon = Pokemon {
-            typing: Typing::Dual(BasicType::Ground, BasicType::Fire),
-            ability: None,
-        };
-        assert_eq!(resistance_complements(&ludicolo, &primal_groundon), 2);
-        assert_eq!(resistance_complements(&primal_groundon, &ludicolo), 1);
+        use BasicType::*;
+        let ludicolo = Pokemon::from((Grass, Water));
+        let primal_groundon = Pokemon::from((Ground, Fire));
+        assert_eq!(resistance_complements(&ludicolo, &primal_groundon), 3);
+        assert_eq!(resistance_complements(&primal_groundon, &ludicolo), 2);
         let matrix = create_complement_matrix(&vec![ludicolo, primal_groundon]);
         println!("{matrix:?}");
-    }
-
-    #[test]
-    fn get_best_team() {
-        let mut max_score = i32::MIN;
-        loop {
-            let team = Team::random(Pokemon::all_type_combinations_and_abilities(), 6);
-            let score = score_resistance(&team);
-            if score >= max_score {
-                println!("{score:?} {team:?}");
-                max_score = score;
-            }
-        }
-    }
-
-    #[test]
-    fn specific_team() {
-        let team = Team {
-            pokemon: vec![
-                Pokemon {
-                    typing: Typing::Dual(BasicType::Fire, BasicType::Ground),
-                    ability: None,
-                },
-                Pokemon {
-                    typing: Typing::Dual(BasicType::Steel, BasicType::Flying),
-                    ability: None,
-                },
-                Pokemon {
-                    typing: Typing::Dual(BasicType::Grass, BasicType::Water),
-                    ability: None,
-                },
-            ],
-        };
-        let score = score_resistance(&team);
-        println!("{score:?} {team:?}");
-    }
-
-    #[test]
-    fn complementary_members() {
-        let fixed_team = Team {
-            pokemon: vec![
-                Pokemon {
-                    typing: Typing::Mono(BasicType::Steel),
-                    ability: None,
-                },
-                Pokemon {
-                    typing: Typing::Mono(BasicType::Rock),
-                    ability: None,
-                },
-                Pokemon {
-                    typing: Typing::Mono(BasicType::Ice),
-                    ability: None,
-                },
-                Pokemon {
-                    typing: Typing::Dual(BasicType::Steel, BasicType::Flying),
-                    ability: None,
-                },
-                Pokemon {
-                    typing: Typing::Dual(BasicType::Steel, BasicType::Flying),
-                    ability: None,
-                },
-                Pokemon {
-                    typing: Typing::Dual(BasicType::Steel, BasicType::Fire),
-                    ability: None,
-                },
-            ],
-        };
-        let mut max_score = i32::MIN;
-        loop {
-            let team = fixed_team.fill_random(Pokemon::all_type_combinations_and_abilities(), 6);
-            let score = score_resistance(&team);
-            if score >= max_score {
-                println!("{score:?} {team:?}");
-                max_score = score;
-            }
-        }
-    }
-
-    #[test]
-    fn create_compl_team_test() {
-        let pool = Pokemon::all_type_combinations_and_abilities().collect::<Vec<_>>();
-        let team = create_compl_team(
-            &Pokemon {
-                typing: Typing::Dual(BasicType::Grass, BasicType::Water),
-                ability: None,
-            },
-            &pool,
-            10000,
-            6,
-        );
-        print!("{team:?}");
-    }
-
-    #[test]
-    fn get_type_chart() {
-        println!(
-            "{:?}",
-            Pokemon {
-                typing: (BasicType::Water, BasicType::Steel).into(),
-                ability: None,
-            }
-            .defense()
-        );
-        println!(
-            "{:?}",
-            Pokemon {
-                typing: BasicType::Water.into(),
-                ability: None,
-            }
-            .defense()
-        );
-    }
-
-    #[test]
-    fn mono_team() {
-        let team = vec![
-            Pokemon {
-                typing: (BasicType::Water).into(),
-                ability: None,
-            },
-            Pokemon {
-                typing: (BasicType::Dragon).into(),
-                ability: None,
-            },
-        ];
-        println!("{:?}", create_complement_matrix(&team));
     }
 
     #[test]
@@ -388,8 +257,8 @@ mod test {
         use BasicType::*;
         Pokemon::all()
             .into_iter()
-            .unique()
             .filter(|p| p.typing.contains(Steel))
+            .unique()
             .for_each(|poke| {
                 println!("{poke:?}");
                 Pokemon::all()
@@ -402,5 +271,21 @@ mod test {
                         println!("  {p:?} {s:?}");
                     });
             });
+    }
+
+    #[test]
+    fn recursive_search_specific_type_complements() {
+        use BasicType::*;
+        let root = Pokemon::from((Steel, Flying));
+        for _ in 0..1 {
+            let best_complements = Pokemon::all()
+                .into_iter()
+                .unique()
+                .map(|p| (p.clone(), resistance_complements(&root, &p)))
+                .max_set_by_key(|(_, s)| *s);
+            best_complements.iter().for_each(|(p, _)| {
+                println!("{p:?} {:?}", resistance_complements(&p, &root));
+            });
+        }
     }
 }
