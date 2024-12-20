@@ -152,7 +152,7 @@ pub fn resistance_complements(poke1: &Pokemon, poke2: &Pokemon) -> i32 {
                 //     _ => panic!("{r1:?} {r2:?}"),
                 // }
             } else {
-                score -= r1;
+                score += 1;
             }
         }
     }
@@ -183,7 +183,7 @@ fn compute_cyclic_resistance_complement(team: &Vec<Pokemon>) -> i32 {
 }
 
 fn best_complement_cycle(team: &Vec<Pokemon>, pool: &Vec<Pokemon>, size: usize) -> Vec<Pokemon> {
-    if team.len() > 2 {
+    if team.len() > 5 {
         return team.clone();
     }
     let last_pokemon = team.last().unwrap().clone();
@@ -194,9 +194,6 @@ fn best_complement_cycle(team: &Vec<Pokemon>, pool: &Vec<Pokemon>, size: usize) 
         .map(|p| (p.clone(), resistance_complements(&last_pokemon, p)))
         .max_set_by_key(|(_, s)| *s)
         .into_iter()
-        .inspect(|(p, s)| {
-            println!("{p:?} {s:?}");
-        })
         .map(|(p, _)| p)
         .collect::<Vec<_>>();
     // Score how well first pokemon complements each candidate, and teams built from there
@@ -207,12 +204,15 @@ fn best_complement_cycle(team: &Vec<Pokemon>, pool: &Vec<Pokemon>, size: usize) 
         let score1 = compute_cyclic_resistance_complement(&new_team);
         let score2 =
             compute_cyclic_resistance_complement(&best_complement_cycle(&new_team, pool, size));
-        let score = std::cmp::max(score1, score2);
-        println!("{score:?} {new_team:?}");
-        if score > best_score {
-            best_score = score;
+        if score2 > best_score {
+            best_score = score2;
+            best_team = best_complement_cycle(&new_team, pool, size);
+        }
+        if score1 > best_score {
+            best_score = score1;
             best_team = new_team;
         }
+        println!("{best_score:?} {best_team:?} {best_score:?} {score1:?} {score2:?}");
     }
     best_team
 }
@@ -327,9 +327,9 @@ mod test {
     #[test]
     fn resistance_complements_test() {
         use BasicType::*;
-        let poke = Pokemon::from((Water, Ground));
+        let poke = Pokemon::from((Flying, Steel));
         // Pokemon::all()
-        vec![Pokemon::from((Flying, Fairy))]
+        vec![Pokemon::from((Flying, Steel))]
             .into_iter()
             .unique()
             .map(|p| (p.clone(), resistance_complements(&poke, &p)))
