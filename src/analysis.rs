@@ -1,10 +1,10 @@
 use crate::{
-    pokemon::{self, Pokemon},
+    pokemon::{Pokemon},
     team::Team,
     typing::{combine_defense_charts_immune, BasicType, TypeTrait},
 };
 use itertools::Itertools;
-use rand::{seq::SliceRandom, Rng};
+use rand::Rng;
 use rayon::prelude::*;
 use std::collections::{BTreeMap, HashMap};
 use strum::IntoEnumIterator;
@@ -22,9 +22,9 @@ fn score_resistance(team: &Team) -> i32 {
         let defense = p.defense();
         for (t, r) in defense.iter() {
             if *r > 1.0 {
-                *weakness_count.get_mut(&t).unwrap() += 1;
+                *weakness_count.get_mut(t).unwrap() += 1;
             } else if *r < 1.0 {
-                *resistance_count.get_mut(&t).unwrap() += 1;
+                *resistance_count.get_mut(t).unwrap() += 1;
             }
         }
     }
@@ -61,11 +61,11 @@ fn create_complement_matrix(pool: &Vec<Pokemon>) -> HashMap<Pokemon, HashMap<Pok
         let (p1, p2) = (combination[0], combination[1]);
         result
             .entry(p1.clone())
-            .or_insert(HashMap::new())
+            .or_default()
             .insert(p2.clone(), resistance_complements(p1, p2));
         result
             .entry(p2.clone())
-            .or_insert(HashMap::new())
+            .or_default()
             .insert(p1.clone(), resistance_complements(p2, p1));
     }
     result
@@ -79,7 +79,7 @@ fn create_compl_team(
 ) -> Team {
     let mut team: Vec<Pokemon> = vec![required.clone()]
         .into_iter()
-        .chain(Team::random(pool.into_iter().cloned(), team_size - 1).pokemon)
+        .chain(Team::random(pool.iter().cloned(), team_size - 1).pokemon)
         .collect();
     let mut best_team = team.clone();
     let mut best_score = score_resistance(&Team {
@@ -109,7 +109,7 @@ fn create_compl_team(
                 }
             }
         }
-        team.push(Pokemon::random(&pool.iter().cloned().collect()));
+        team.push(Pokemon::random(&pool.to_vec()));
         let score = score_resistance(&Team {
             pokemon: team.clone(),
         });
@@ -220,10 +220,10 @@ fn best_complement_cycle(team: &Vec<Pokemon>, pool: &Vec<Pokemon>, size: usize) 
 #[cfg(test)]
 mod test {
     use super::*;
-    use itertools::all;
-    use pokemon::Typing;
-    use rayon::vec;
-    use std::{i32, usize};
+    
+    
+    
+    
 
     #[test]
     fn create_complement_matrix_test() {
@@ -279,7 +279,7 @@ mod test {
     fn find_best_connector_test() {
         use BasicType::*;
         let pool = Pokemon::all_type_combinations_and_abilities().collect::<Vec<_>>();
-        let connections = resistance_connector(
+        resistance_connector(
             &Pokemon {
                 typing: (Water).into(),
                 ability: None,

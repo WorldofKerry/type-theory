@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeSet, HashMap, HashSet},
+    collections::BTreeSet,
     str::FromStr,
 };
 
@@ -8,7 +8,7 @@ use rand::seq::SliceRandom;
 use strum::IntoEnumIterator;
 
 use crate::typing::{
-    combine_defense_charts, get_multitype_defense_chart, Ability, BasicType, Relationship, Type,
+    combine_defense_charts, Ability, BasicType, Relationship,
     TypeTrait,
 };
 
@@ -160,9 +160,9 @@ impl TypeTrait for Pokemon {
 
 #[cfg(test)]
 mod tests {
-    use std::{collections::HashSet, hash::{Hash, Hasher}};
+    use std::hash::{Hash, Hasher};
 
-    use crate::pokemon;
+    
 
     use super::*;
 
