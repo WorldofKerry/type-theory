@@ -23,23 +23,17 @@ pub fn resistance_complements(poke1: &Pokemon, poke2: &Pokemon) -> i32 {
         };
         if r2 > 0 {
             // println!("{t:?} {r1:?} {r2:?}");
-            if r1 > 0 {
-                // match (r2, r1) {
-                //     (2, 2) => score -= 4,
-                //     (1, 2) => score -= 3,
-                //     (2, 1) => score -= 2,
-                //     (1, 1) => score -= 1,
-                //     _ => panic!("{r1:?} {r2:?}"),
-                // }
-            } else {
+            if r1 == 0 {
                 score += 1;
+            } else if r1 < 0 {
+                score += 2;
             }
         }
     }
     score
 }
 
-fn create_complement_matrix(pool: &Vec<Pokemon>) -> HashMap<Pokemon, HashMap<Pokemon, i32>> {
+pub fn create_complement_matrix(pool: &Vec<Pokemon>) -> HashMap<Pokemon, HashMap<Pokemon, i32>> {
     let mut result: HashMap<Pokemon, HashMap<Pokemon, i32>> = HashMap::new();
     let combinations = pool.iter().combinations(2);
     for combination in combinations {
@@ -59,7 +53,6 @@ fn create_complement_matrix(pool: &Vec<Pokemon>) -> HashMap<Pokemon, HashMap<Pok
 #[cfg(test)]
 mod tests {
     use crate::typing::BasicType;
-
     use super::*;
 
     #[test]
@@ -67,8 +60,8 @@ mod tests {
         use BasicType::*;
         let ludicolo = Pokemon::from((Grass, Water));
         let primal_groundon = Pokemon::from((Ground, Fire));
-        assert_eq!(resistance_complements(&ludicolo, &primal_groundon), 2);
-        assert_eq!(resistance_complements(&primal_groundon, &ludicolo), 3);
+        assert_eq!(resistance_complements(&ludicolo, &primal_groundon), 4);
+        assert_eq!(resistance_complements(&primal_groundon, &ludicolo), 5);
         let matrix = create_complement_matrix(&vec![ludicolo, primal_groundon]);
         println!("{matrix:?}");
     }
@@ -89,7 +82,6 @@ mod tests {
                 println!("{:?}", p);
             });
     }
-
     
     #[test]
     fn find_complemented() {

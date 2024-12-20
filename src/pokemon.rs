@@ -153,6 +153,14 @@ impl Pokemon {
         let mut rng = rand::thread_rng();
         pool.choose(&mut rng).unwrap().clone()
     }
+
+    pub fn random_team(pool: &Vec<Pokemon>, size: usize) -> Vec<Pokemon> {
+        let mut ret = vec![];
+        for _ in 0..size {
+            ret.push(Pokemon::random(pool));
+        }
+        ret
+    }
 }
 
 impl TypeTrait for Pokemon {
