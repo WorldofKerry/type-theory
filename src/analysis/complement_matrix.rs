@@ -69,10 +69,7 @@ mod tests {
     #[test]
     fn find_complements() {
         use BasicType::*;
-        let poke = Pokemon {
-            typing: (Water).into(),
-            ability: None,
-        };
+        let poke = Pokemon::from(Water);
         Pokemon::all()
             .into_iter()
             .map(|p| (p.clone(), resistance_complements(&poke, &p)))
@@ -86,10 +83,7 @@ mod tests {
     #[test]
     fn find_complemented() {
         use BasicType::*;
-        let poke = Pokemon {
-            typing: (Grass, Ice).into(),
-            ability: None,
-        };
+        let poke = Pokemon::from((Grass, Ice));
         // vec![Pokemon {
         //     typing: (Poison, Ghost).into(),
         //     ability: None,

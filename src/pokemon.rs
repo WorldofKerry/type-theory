@@ -67,6 +67,7 @@ impl TypeTrait for Typing {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Pokemon {
+    pub species: String,
     pub typing: Typing,
     pub ability: Option<Ability>,
 }
@@ -74,6 +75,7 @@ pub struct Pokemon {
 impl From<BasicType> for Pokemon {
     fn from(t: BasicType) -> Pokemon {
         Pokemon {
+            species: "".into(),
             typing: t.into(),
             ability: None,
         }
@@ -83,6 +85,7 @@ impl From<BasicType> for Pokemon {
 impl From<(BasicType, BasicType)> for Pokemon {
     fn from(t: (BasicType, BasicType)) -> Pokemon {
         Pokemon {
+            species: "".into(),
             typing: t.into(),
             ability: None,
         }
@@ -90,6 +93,37 @@ impl From<(BasicType, BasicType)> for Pokemon {
 }
 
 impl Pokemon {
+    pub fn from_pkhex_dump(file: &str) -> Vec<Pokemon> {
+        // "Position","Nickname","Species","Nature","Gender","ESV","HP_Type","Ability","Move1","Move2","Move3","Move4","HeldItem","HP","ATK","DEF","SPA","SPD","SPE","MetLoc","EggLoc","Ball","OT","Version","OTLang","Legal","EC","PID","IV_HP","IV_ATK","IV_DEF","IV_SPA","IV_SPD","IV_SPE","EXP","Level","EV_HP","EV_ATK","EV_DEF","EV_SPA","EV_SPD","EV_SPE","Cool","Beauty","Cute","Smart","Tough","Sheen","NotOT","AbilityNum","GenderFlag","Form","PokerusStrain","PokerusDays","MetLevel","OriginalTrainerGender","FatefulEncounter","IsEgg","IsNicknamed","IsShiny","TID16","SID16","TSV","Move1_PP","Move2_PP","Move3_PP","Move4_PP","Move1_PPUp","Move2_PPUp","Move3_PPUp","Move4_PPUp","Relearn1","Relearn2","Relearn3","Relearn4","Checksum","Friendship","EggYear","EggMonth","EggDay","MetYear","MetMonth","MetDay"
+        let all_pokemon = Pokemon::all();
+        let mut rdr = csv::Reader::from_path(file).unwrap();
+        rdr.records()
+            .map(|r| {
+                let record = r.unwrap();
+                let species = record.get(2).unwrap().to_string();
+                let ability = match record.get(7).unwrap() {
+                    "" => None,
+                    a => match Ability::from_str(a) {
+                        Ok(a) => Some(a),
+                        Err(_) => None,
+                    },
+                };
+                let typing = all_pokemon
+                    .iter()
+                    .find(|p| p.species == species)
+                    .unwrap()
+                    .typing
+                    .clone();
+                Pokemon {
+                    species,
+                    typing,
+                    ability,
+                }
+            })
+            .inspect(|p| println!("{:?}", p))
+            .collect()
+    }
+
     pub fn all() -> Vec<Pokemon> {
         // dexnum,name,generation,type1,type2,species,height,weight,ability1,ability2,hidden_ability,hp,attack,defense,sp_atk,sp_def,speed,total,ev_yield,catch_rate,base_friendship,base_exp,growth_rate,egg_group1,egg_group2,percent_male,percent_female,egg_cycles,special_group
         let file = "data/pokemon_data.csv"; // https://www.kaggle.com/datasets/guavocado/pokemon-stats-1025-pokemons
@@ -98,6 +132,7 @@ impl Pokemon {
         rdr.records()
             .flat_map(|r| {
                 let record = r.unwrap();
+                let name = record.get(1).unwrap().to_string();
                 let typing = match record.get(4).unwrap() {
                     "" => Typing::from(BasicType::from_str(record.get(3).unwrap()).unwrap()),
                     t => Typing::from((
@@ -120,6 +155,7 @@ impl Pokemon {
                 })
                 .collect();
                 abilities.into_iter().map(move |a| Pokemon {
+                    species: name.clone(),
                     typing: typing.clone(),
                     ability: a,
                 })
@@ -132,11 +168,13 @@ impl Pokemon {
         Typing::all()
             .flat_map(|t| {
                 Ability::iter().map(move |a| Pokemon {
+                    species: "".into(),
                     typing: t.clone(),
                     ability: Some(a),
                 })
             })
             .chain(Typing::all().map(|t| Pokemon {
+                species: "".into(),
                 typing: t,
                 ability: None,
             }))
@@ -144,6 +182,7 @@ impl Pokemon {
 
     pub fn all_type_combinations_and_abilities() -> impl Iterator<Item = Pokemon> {
         Typing::all().map(|t| Pokemon {
+            species: "".into(),
             typing: t,
             ability: None,
         })
@@ -175,17 +214,18 @@ impl TypeTrait for Pokemon {
 #[cfg(test)]
 mod tests {
     use std::hash::{Hash, Hasher};
-
-    
-
     use super::*;
 
     #[test]
+    fn test_pokemon_all() {
+        let all_pokemon = Pokemon::all();
+        // Note that pokemon with multiple abilities that affect the type chart are split into multiple entries
+        assert!(all_pokemon.len() == 3075);
+    }
+
+    #[test]
     fn test_get_defense() {
-        let duraludon = Pokemon {
-            typing: (BasicType::Dragon, BasicType::Steel).into(),
-            ability: None,
-        };
+        let duraludon = Pokemon::from((BasicType::Dragon, BasicType::Steel));
         println!("{:?}", BasicType::Dragon.defense());
         let defense_chart = duraludon.defense();
         assert_eq!(defense_chart.get(BasicType::Normal), 0.5);
@@ -213,5 +253,12 @@ mod tests {
         poke1.hash(&mut hasher1);
         poke2.hash(&mut hasher2);
         assert_eq!(hasher1.finish(), hasher2.finish());
+    }
+
+    #[test]
+    fn test_from_pkhex_dump() {
+        let file = "data/Box Data Dump.csv";
+        let team = Pokemon::from_pkhex_dump(file);
+        assert!(team.len() > 10);
     }
 }
