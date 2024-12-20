@@ -16,6 +16,12 @@ use crate::typing::{
 pub struct Typing(BTreeSet<BasicType>);
 
 impl Typing {
+    pub fn iter(&self) -> impl Iterator<Item = &BasicType> {
+        self.0.iter()
+    }
+}
+
+impl Typing {
     pub fn contains(&self, t: BasicType) -> bool {
         self.0.contains(&t)
     }

@@ -75,14 +75,6 @@ pub struct Relationship {
     inner: BTreeMap<BasicType, f32>
 }
 
-impl Deref for Relationship {
-    type Target = BTreeMap<BasicType, f32>;
-
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-
 impl Relationship {
     fn from_raw_parts(inner: BTreeMap<BasicType, f32>) -> Self {
         let mut ret = Relationship { inner };
@@ -91,6 +83,9 @@ impl Relationship {
     }
     pub fn get(&self, key: BasicType) -> f32 {
         *self.inner.get(&key).unwrap_or(&1.0)
+    }
+    pub fn iter(&self) -> impl Iterator<Item = (&BasicType, &f32)> {
+        self.inner.iter()
     }
 }
 

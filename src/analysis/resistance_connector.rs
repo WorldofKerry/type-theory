@@ -1,0 +1,40 @@
+use crate::pokemon::Pokemon;
+
+use super::complement_matrix::resistance_complements;
+
+
+pub fn resistance_connector(
+    poke1: &Pokemon,
+    poke2: &Pokemon,
+    pool: &Vec<Pokemon>,
+) -> Vec<(Pokemon, i32, i32)> {
+    pool.iter()
+        .map(|poke3| {
+            let score1 = resistance_complements(poke3, poke1);
+            let score2 = resistance_complements(poke2, poke3);
+            (poke3.clone(), score1, score2)
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{pokemon::Typing, typing::Type};
+    use crate::typing::BasicType::*;
+    use super::*;
+
+    #[test]
+    fn test_resistance_connector() {
+        let pool = Pokemon::all_type_combinations_and_abilities().collect::<Vec<_>>();
+        let poke1 = Pokemon {
+            typing: (Normal).into(),
+            ability: None,
+        };
+        let poke2 = Pokemon {
+            typing: (Fire).into(),
+            ability: None,
+        };
+        let res = resistance_connector(&poke1, &poke2, &pool);
+        assert_eq!(res.len(), 324);
+    }
+}
