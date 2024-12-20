@@ -1,5 +1,9 @@
-use std::{collections::HashMap, str::FromStr};
+use std::{
+    collections::{BTreeSet, HashMap},
+    str::FromStr,
+};
 
+use itertools::Itertools;
 use rand::seq::SliceRandom;
 use strum::IntoEnumIterator;
 
@@ -8,10 +12,29 @@ use crate::typing::{
     TypeTrait,
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Debug, Eq, Hash)]
 pub enum Typing {
     Mono(BasicType),
     Dual(BasicType, BasicType),
+}
+
+impl PartialEq for Typing {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Typing::Mono(t1), Typing::Mono(t2)) => t1 == t2,
+            (Typing::Dual(t1, t2), Typing::Dual(t3, t4)) => (t1 == t3 && t2 == t4) || (t1 == t4 && t2 == t3),
+            _ => false,
+        }
+    }
+}
+
+impl Typing {
+    pub fn contains(&self, t: BasicType) -> bool {
+        match self {
+            Typing::Mono(t1) => t == *t1,
+            Typing::Dual(t1, t2) => t == *t1 || t == *t2,
+        }
+    }
 }
 
 impl Into<Typing> for BasicType {
@@ -57,6 +80,24 @@ pub struct Pokemon {
     pub ability: Option<Ability>,
 }
 
+impl From<BasicType> for Pokemon {
+    fn from(t: BasicType) -> Pokemon {
+        Pokemon {
+            typing: Typing::Mono(t),
+            ability: None,
+        }
+    }
+}
+
+impl From<(BasicType, BasicType)> for Pokemon {
+    fn from(t: (BasicType, BasicType)) -> Pokemon {
+        Pokemon {
+            typing: Typing::Dual(t.0, t.1),
+            ability: None,
+        }
+    }
+}
+
 impl Pokemon {
     pub fn all() -> Vec<Pokemon> {
         // dexnum,name,generation,type1,type2,species,height,weight,ability1,ability2,hidden_ability,hp,attack,defense,sp_atk,sp_def,speed,total,ev_yield,catch_rate,base_friendship,base_exp,growth_rate,egg_group1,egg_group2,percent_male,percent_female,egg_cycles,special_group
@@ -77,13 +118,16 @@ impl Pokemon {
                     record.get(8).unwrap(),
                     record.get(9).unwrap(),
                     record.get(10).unwrap(),
-                ].into_iter().map(|a| match a {
+                ]
+                .into_iter()
+                .map(|a| match a {
                     "" => None,
                     a => match Ability::from_str(a) {
                         Ok(a) => Some(a),
                         Err(_) => None,
                     },
-                }).collect();
+                })
+                .collect();
                 abilities.into_iter().map(move |a| Pokemon {
                     typing: typing.clone(),
                     ability: a,

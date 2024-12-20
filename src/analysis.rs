@@ -352,14 +352,14 @@ mod test {
         //     ability: None,
         // }]
         Pokemon::all()
-        .into_iter()
-        .map(|p| (p.clone(), resistance_complements(&p, &poke)))
-        .unique()
-        .filter(|(_, score)| *score >= -50)
-        .sorted_by(|(_, s1), (_, s2)| s1.cmp(s2))
-        .for_each(|p| {
-            println!("{:?}", p);
-        });
+            .into_iter()
+            .map(|p| (p.clone(), resistance_complements(&p, &poke)))
+            .unique()
+            .filter(|(_, score)| *score >= -50)
+            .sorted_by(|(_, s1), (_, s2)| s1.cmp(s2))
+            .for_each(|p| {
+                println!("{:?}", p);
+            });
     }
 
     #[test]
@@ -381,5 +381,26 @@ mod test {
         .for_each(|(p, s1, s2)| {
             println!("{p:?} {s1:?} {s2:?}");
         });
+    }
+
+    #[test]
+    fn find_every_steel_complement() {
+        use BasicType::*;
+        Pokemon::all()
+            .into_iter()
+            .unique()
+            .filter(|p| p.typing.contains(Steel))
+            .for_each(|poke| {
+                println!("{poke:?}");
+                Pokemon::all()
+                    .into_iter()
+                    .unique()
+                    .map(|p| (p.clone(), resistance_complements(&poke, &p)))
+                    .max_set_by_key(|(_, s)| *s)
+                    .into_iter()
+                    .for_each(|(p, s)| {
+                        println!("  {p:?} {s:?}");
+                    });
+            });
     }
 }
