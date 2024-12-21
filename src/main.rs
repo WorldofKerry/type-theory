@@ -9,12 +9,13 @@ fn main() {
     let mut autoscale = AutoScale::new([0.8, 0.3, 0.5, 1.0, 0.0, 0.0]);
     let pool = Pokemon::all();
     let pool = Pokemon::from_pkhex_dump("data/Box Data Dump.csv");
+
     let mut best_team = Pokemon::random_team(&pool, size);
-    autoscale.add(type_theory::analysis::score(&best_team, &Pokemon::random_team(&pool, 100)));
+    autoscale.add(type_theory::analysis::score(&best_team, &Pokemon::random_team(&Pokemon::all(), 100)));
 
     loop {
         let team = simulated_annealing(Pokemon::random_team(&pool, size), &pool, autoscale.clone());
-        let opponents = Pokemon::random_team(&pool, 100);
+        let opponents = Pokemon::random_team(&Pokemon::all(), 100);
 
         let scores = type_theory::analysis::score(&team, &opponents);
         autoscale.add(scores);
@@ -28,9 +29,9 @@ fn main() {
             best_team.iter().for_each(|p| print!("{:?} ", p.species));
             println!();
         } else {
-            print!("Rejected: {scores:4.2?} ");
-            team.iter().for_each(|p| print!("{:?} ", p.species));
-            println!();
+            // print!("Rejected: {scores:4.2?} ");
+            // team.iter().for_each(|p| print!("{:?} ", p.species));
+            // println!();
         }
     }
 }

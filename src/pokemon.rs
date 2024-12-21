@@ -252,6 +252,13 @@ impl Pokemon {
             .cloned()
             .collect()
     }
+
+    pub fn random_fill(team: &Vec<Pokemon>, pool: &Vec<Pokemon>, size: usize) -> Vec<Pokemon> {
+        let missing = size - team.len();
+        let mut new_team = team.clone();
+        new_team.extend(Pokemon::random_team(pool, missing));
+        new_team
+    }
 }
 
 impl TypeTrait for Pokemon {
