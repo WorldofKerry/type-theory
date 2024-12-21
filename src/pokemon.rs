@@ -137,12 +137,32 @@ impl Pokemon {
                         Err(_) => None,
                     },
                 };
-                let typing = all_pokemon
+                let typing = { 
+                    let matched_pokemon = all_pokemon
                     .iter()
                     .find(|p| p.species == species)
-                    .unwrap()
-                    .typing
-                    .clone();
+                    .unwrap();
+                    let form = record.get(51).unwrap();
+                    if form != "0" {
+                        match matched_pokemon.species.as_str() {
+                            "Rotom" => match form {
+                                "0" => matched_pokemon.typing.clone(),
+                                "1" => Typing::from((BasicType::Electric, BasicType::Fire)),
+                                "2" => Typing::from((BasicType::Electric, BasicType::Water)),
+                                "3" => Typing::from((BasicType::Electric, BasicType::Ice)),
+                                "4" => Typing::from((BasicType::Electric, BasicType::Flying)),
+                                "5" => Typing::from((BasicType::Electric, BasicType::Grass)),
+                                _ => panic!("Invalid Rotom form"),
+                            },
+                            "Gastrodon" => match form {
+                                _ => matched_pokemon.typing.clone(),
+                            }
+                            _ => panic!("Unhandled form for {species:?} with form {form:?}"),
+                        }
+                    } else {
+                        matched_pokemon.typing.clone()
+                    }
+                };
                 let moves = vec![
                     record.get(8).unwrap(),
                     record.get(9).unwrap(),

@@ -8,7 +8,11 @@ fn main() {
     let size = 6;
     let mut autoscale = AutoScale::new([0.8, 0.3, 0.5, 1.0, 0.0, 0.0]);
     let pool = Pokemon::all();
-    let pool = Pokemon::from_pkhex_dump("data/Box Data Dump.csv");
+    let pool = {
+        let pool = Pokemon::from_pkhex_dump("data/Box Data Dump.csv");
+        pool.iter().for_each(|p| println!("{:?} {:?}", p.species, p.typing));
+        pool
+    };
 
     let mut best_team = Pokemon::random_team(&pool, size);
     autoscale.add(type_theory::analysis::score(&best_team, &Pokemon::random_team(&Pokemon::all(), 100)));
