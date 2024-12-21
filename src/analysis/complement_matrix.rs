@@ -107,7 +107,7 @@ mod tests {
             .filter(|p| p.typing.contains(Steel))
             .unique()
             .for_each(|poke| {
-                println!("{poke:?}");
+                // println!("{poke:?}");
                 Pokemon::all()
                     .into_iter()
                     .unique()
@@ -115,7 +115,7 @@ mod tests {
                     .max_set_by_key(|(_, s)| *s)
                     .into_iter()
                     .for_each(|(p, s)| {
-                        println!("  {p:?} {s:?}");
+                        // println!("  {p:?} {s:?}");
                     });
             });
     }

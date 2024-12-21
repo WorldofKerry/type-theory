@@ -1,4 +1,4 @@
-mod pokemon;
-mod typing;
-mod team;
-mod analysis;
+pub mod pokemon;
+pub mod typing;
+pub mod team;
+pub mod analysis;
