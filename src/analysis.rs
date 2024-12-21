@@ -36,12 +36,13 @@ pub fn score<const N: usize>(team: &Vec<Pokemon>, opponents: &Vec<Pokemon>) -> [
     ret
 }
 
-pub fn simulated_annealing<const N: usize>(team: Vec<Pokemon>, pool: &Vec<Pokemon>, autoscale: AutoScale::<N>, k_max: usize) -> Vec<Pokemon> {
+pub fn simulated_annealing<const N: usize>(team: Vec<Pokemon>, pool: &Vec<Pokemon>, autoscale: AutoScale::<N>) -> Vec<Pokemon> {
     let mut team_best = team.clone();
     let mut team_good = team;
     let mut autoscale = autoscale;
     let mut temp = 0.5;
     let temp_step = 0.1;
+    let k_max = pool.len();
     while temp >= 0.0 {
         for k in 0..k_max {
             let team_new = random_neighbour(team_good.clone(), pool);
