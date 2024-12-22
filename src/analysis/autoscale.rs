@@ -39,4 +39,11 @@ impl<const N: usize> AutoScale<N> {
         }
         score
     }
+
+    pub fn combine(&mut self, other: &AutoScale<N>) {
+        for (entry, other_entry) in self.entries.iter_mut().zip(other.entries.iter()) {
+            entry.min = entry.min.min(other_entry.min);
+            entry.max = entry.max.max(other_entry.max);
+        }
+    }
 }
