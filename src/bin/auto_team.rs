@@ -17,7 +17,7 @@ pub fn score<const N: usize>(team: &Vec<Pokemon>) -> [f64; N] {
 }
 
 fn main() {
-    let size = 5;
+    let size = 6;
     let autoscale_global = Mutex::new(AutoScale::new([1.0, 0.25, 0.5, 0.75]));
     let pool = Pokemon::all();
     let pool = {

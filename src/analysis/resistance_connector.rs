@@ -25,7 +25,7 @@ mod tests {
 
     #[test]
     fn test_resistance_connector() {
-        let pool = Pokemon::all_type_combinations_and_abilities().collect::<Vec<_>>();
+        let pool = Pokemon::all_type_combinations().collect::<Vec<_>>();
         let poke1 = Pokemon::from(Normal);
         let poke2 = Pokemon::from(Fire);
         let res = resistance_connector(&poke1, &poke2, &pool);

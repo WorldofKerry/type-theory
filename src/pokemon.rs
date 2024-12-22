@@ -1,4 +1,5 @@
 use std::{collections::BTreeSet, str::FromStr};
+use itertools::Itertools;
 use rand::seq::SliceRandom;
 use strum::IntoEnumIterator;
 use serde::{Deserialize, Serialize};
@@ -36,11 +37,7 @@ impl Typing {
         BasicType::iter().map(Typing::from)
     }
     fn dual() -> impl Iterator<Item = Typing> {
-        BasicType::iter().flat_map(|t1| {
-            BasicType::iter()
-                .filter(move |t2| t1 != *t2)
-                .map(move |t2| Typing::from((t1, t2)))
-        })
+        BasicType::iter().combinations(2).map(|c| Typing::from((c[0], c[1])))
     }
     fn all() -> impl Iterator<Item = Typing> {
         Typing::mono().chain(Typing::dual())
@@ -232,7 +229,7 @@ impl Pokemon {
             .collect()
     }
 
-    pub fn all_type_combinations() -> impl Iterator<Item = Pokemon> {
+    pub fn all_type_combinations_and_abilities() -> impl Iterator<Item = Pokemon> {
         // All monotype/dualtype and ability combinations
         Typing::all()
             .flat_map(|t| {
@@ -251,7 +248,7 @@ impl Pokemon {
             }))
     }
 
-    pub fn all_type_combinations_and_abilities() -> impl Iterator<Item = Pokemon> {
+    pub fn all_type_combinations() -> impl Iterator<Item = Pokemon> {
         Typing::all().map(|t| Pokemon {
             species: "".into(),
             typing: t,
