@@ -1,12 +1,10 @@
 use std::{collections::BTreeSet, str::FromStr};
-
-use itertools::Itertools;
 use rand::seq::SliceRandom;
 use strum::IntoEnumIterator;
-
+use serde::{Deserialize, Serialize};
 use crate::typing::{combine_defense_charts, Ability, BasicType, Relationship, TypeTrait};
 
-#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Hash)]
+#[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Hash, Deserialize, Serialize)]
 pub struct Typing(BTreeSet<BasicType>);
 
 impl Typing {
@@ -59,7 +57,7 @@ impl TypeTrait for Typing {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Deserialize, Serialize)]
 pub struct Move {
     pub name: String,
     pub typing: Typing,
@@ -90,7 +88,7 @@ impl Move {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Deserialize, Serialize)]
 pub struct Pokemon {
     pub species: String,
     pub typing: Typing,

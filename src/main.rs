@@ -39,7 +39,7 @@ fn main() {
             best_team = team;
             print!("Global best: {team_scores:4.2?} ");
             best_team.iter().for_each(|p| print!("{:?} ", p.species));
-            println!();
+            println!("{}", serde_json::to_string(&best_team).unwrap());
         } else {
             // print!("Rejected: {scores:4.2?} ");
             // team.iter().for_each(|p| print!("{:?} ", p.species));

@@ -1,10 +1,11 @@
 use std::collections::BTreeMap;
-use std::ops::Deref;
+use serde::Deserialize;
+use serde::Serialize;
 use strum::EnumString;
 use strum::IntoEnumIterator;
 use strum::EnumIter;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd, EnumString)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd, EnumString, Serialize, Deserialize)]
 pub enum BasicType {
     Normal,
     Fire,
@@ -26,7 +27,7 @@ pub enum BasicType {
     Fairy,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd, EnumString)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd, EnumString, Serialize, Deserialize)]
 pub enum Ability {
     Levitate,
     #[strum(serialize = "Water Absorb")]
