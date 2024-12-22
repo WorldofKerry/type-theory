@@ -2,8 +2,8 @@ use strum::IntoEnumIterator;
 
 use crate::{pokemon::Pokemon, typing::{BasicType, TypeTrait}};
 
-/// Favours teams that have at least one resistance to each type
-pub fn resistance_count(team: &Vec<Pokemon>) -> f64 {
+/// For every type, log score on the number of resistances to that type
+pub fn one_resist_for_each_type(team: &Vec<Pokemon>) -> f64 {
     let team_defenses = team.iter().map(|poke| poke.defense()).collect::<Vec<_>>();
     let mut score = 0.0;
     for t in BasicType::iter() {
@@ -15,8 +15,8 @@ pub fn resistance_count(team: &Vec<Pokemon>) -> f64 {
     score
 }
 
-/// Favours teams that have a net resistance multipler to each type greater than 1
-pub fn resistance_multiplier(team: &Vec<Pokemon>, immune_multiplier: f64) -> f64 {
+/// For every type, score on product of weak/resist multipliers
+pub fn per_type_multiplier(team: &Vec<Pokemon>, immune_multiplier: f64) -> f64 {
     let team_defenses = team.iter().map(|poke| poke.defense()).collect::<Vec<_>>();
     let mut score = 0.0;
     for t in BasicType::iter() {
@@ -33,8 +33,8 @@ pub fn resistance_multiplier(team: &Vec<Pokemon>, immune_multiplier: f64) -> f64
     score
 }
 
-/// Favour teams that have more members weak to a type than resistant
-pub fn resistance_balance(team: &Vec<Pokemon>) -> f64 {
+/// For every type, score on difference between the number of resistances and weaknesses
+pub fn per_type_net_resist_weak_count(team: &Vec<Pokemon>) -> f64 {
     let team_defenses = team.iter().map(|poke| poke.defense()).collect::<Vec<_>>();
     let mut score = 0.0;
     for t in BasicType::iter() {

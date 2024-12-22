@@ -4,12 +4,12 @@ use rand::Rng;
 use crate::pokemon::Pokemon;
 
 pub mod team_opp_matchup;
-mod resistance_connector;
-mod complement_matrix;
-mod complement_cycle;
-mod average_resistance;
+pub mod resistance_connector;
+pub mod complement_matrix;
+pub mod complement_cycle;
+pub mod resistance;
 pub mod autoscale;
-mod offensive_coverage;
+pub mod offensive_coverage;
 
 pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon> {
     let mut team = team.clone();
@@ -19,37 +19,19 @@ pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon>
     team
 }
 
-pub fn score<const N: usize>(team: &Vec<Pokemon>, opponents: &Vec<Pokemon>) -> [f64; N] {
-    // let matchup_score = team_opp_matchup::score_team_opp_matchup(&team, &opponents, team_opp_matchup::good_matchup);            
-    // let synergy_score = complement_matrix::create_complement_matrix(&team).values().map(|m| m.values().sum::<i32>()).map(|s| s as f64).sum::<f64>();
-    let resistance_count = average_resistance::resistance_count(&team);
-    let resistance_multiplier = average_resistance::resistance_multiplier(&team, 0.25);
-    let resistance_balance = average_resistance::resistance_balance(&team);
-    let offensive_coverage = offensive_coverage::score_offensive_coverage(&team);
-    let mut ret: [f64; N] = [0.0; N];
-    ret[0] = resistance_balance;
-    ret[1] = offensive_coverage;
-    ret[2] = resistance_count;
-    ret[3] = resistance_multiplier;
-    // ret[4] = synergy_score;
-    // ret[5] = matchup_score;
-    ret
-}
-
-pub fn simulated_annealing<const N: usize>(team: Vec<Pokemon>, pool: &Vec<Pokemon>, autoscale: AutoScale::<N>) -> Vec<Pokemon> {
+pub fn simulated_annealing<const N: usize>(team: Vec<Pokemon>, pool: &Vec<Pokemon>, autoscale: &mut AutoScale::<N>,
+    score_fn: fn(&Vec<Pokemon>) -> [f64; N]
+) -> Vec<Pokemon> {
     let mut team_best = team.clone();
     let mut team_good = team;
-    let mut autoscale = autoscale;
     let mut temp = 0.5;
     let temp_step = 0.1;
     let k_max = pool.len();
     while temp >= 0.0 {
         for k in 0..k_max {
             let team_new = random_neighbour(team_good.clone(), pool);
-
-            let opponents = Pokemon::random_team(&Pokemon::all(), 100);            
-            let scores_good = score(&team_good, &opponents);
-            let scores_new = score(&team_new, &opponents);
+            let scores_good = score_fn(&team_good);
+            let scores_new = score_fn(&team_new);
             autoscale.add(scores_new);
             
             let score_good = autoscale.scale(scores_good);
@@ -67,7 +49,7 @@ pub fn simulated_annealing<const N: usize>(team: Vec<Pokemon>, pool: &Vec<Pokemo
                 // println!();
             }
 
-            let score_best = autoscale.scale(score(&team_best, &opponents));
+            let score_best = autoscale.scale(score_fn(&team_best));
             if score_good > score_best {
                 team_best = team_good.clone();
                 // print!("Local best: temp {:?}, k {:?}, old {:?}, new {:?} ", temp, k, score_best, score_good);
