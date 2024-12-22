@@ -31,6 +31,8 @@ pub enum Ability {
     Levitate,
     #[strum(serialize = "Water Absorb")]
     WaterAbsorb,
+    #[strum(serialize = "Dry Skin")]
+    DrySkin,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -338,6 +340,13 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
             Type::Ability(Ability::WaterAbsorb),
             BTreeMap::from([
                 ((BasicType::Water), 0.0),
+            ]),
+        ),
+        (
+            Type::Ability(Ability::DrySkin),
+            BTreeMap::from([
+                ((BasicType::Water), 0.0),
+                ((BasicType::Fire), 1.25),
             ]),
         ),
     ])
