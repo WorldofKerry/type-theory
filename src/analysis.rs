@@ -10,6 +10,7 @@ pub mod complement_cycle;
 pub mod resistance;
 pub mod autoscale;
 pub mod offensive_coverage;
+pub mod typing;
 
 pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon> {
     let mut team = team.clone();
