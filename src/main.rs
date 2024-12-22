@@ -5,12 +5,12 @@ use type_theory::pokemon::Pokemon;
 use type_theory::analysis::autoscale::AutoScale;
 
 fn main() {
-    let size = 6;
+    let size = 5;
     let mut autoscale = AutoScale::new([0.8, 0.3, 0.5, 1.0, 0.0, 0.0]);
     let pool = Pokemon::all();
     let pool = {
         let pool = Pokemon::from_pkhex_dump("data/Box Data Dump.csv");
-        pool.iter().for_each(|p| println!("{:?} {:?}", p.species, p.typing));
+        pool.iter().for_each(|p| println!("{:?} {:?} {:?}", p.species, p.typing, p.ability));
         pool
     };
 

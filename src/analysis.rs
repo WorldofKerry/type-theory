@@ -22,14 +22,14 @@ pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon>
 pub fn score<const N: usize>(team: &Vec<Pokemon>, opponents: &Vec<Pokemon>) -> [f64; N] {
     // let matchup_score = team_opp_matchup::score_team_opp_matchup(&team, &opponents, team_opp_matchup::good_matchup);            
     // let synergy_score = complement_matrix::create_complement_matrix(&team).values().map(|m| m.values().sum::<i32>()).map(|s| s as f64).sum::<f64>();
-    let resistance_score = average_resistance::resistance_count(&team);
+    let resistance_count = average_resistance::resistance_count(&team);
     let resistance_multiplier = average_resistance::resistance_multiplier(&team, 0.25);
     let resistance_balance = average_resistance::resistance_balance(&team);
     let offensive_coverage = offensive_coverage::score_offensive_coverage(&team);
     let mut ret: [f64; N] = [0.0; N];
     ret[0] = resistance_balance;
     ret[1] = offensive_coverage;
-    ret[2] = resistance_score;
+    ret[2] = resistance_count;
     ret[3] = resistance_multiplier;
     // ret[4] = synergy_score;
     // ret[5] = matchup_score;

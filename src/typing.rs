@@ -29,6 +29,8 @@ pub enum BasicType {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd, EnumString)]
 pub enum Ability {
     Levitate,
+    #[strum(serialize = "Water Absorb")]
+    WaterAbsorb,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -331,6 +333,12 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
             BTreeMap::from([
                 ((BasicType::Ground), 0.0),
             ]),
-        )
+        ),
+        (
+            Type::Ability(Ability::WaterAbsorb),
+            BTreeMap::from([
+                ((BasicType::Water), 0.0),
+            ]),
+        ),
     ])
 }

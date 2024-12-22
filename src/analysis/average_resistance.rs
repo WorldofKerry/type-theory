@@ -40,8 +40,13 @@ pub fn resistance_balance(team: &Vec<Pokemon>) -> f64 {
     for t in BasicType::iter() {
         let weak_count = team_defenses.iter().filter(|def| def.get(t) > 1.0).count();
         let resist_count = team_defenses.iter().filter(|def| def.get(t) < 1.0).count();
-        if resist_count < weak_count {
-            score -= 1.0;
+        let diff = resist_count as f64 - weak_count as f64;
+        if diff <= 0.0 {
+            // Linear penalty for more weaknesses
+            score += diff;
+        } else {
+            // Logarithmic reward for more resistances
+            score += 1.0 - 1.0 / (diff + 1.0);
         }
     }
     score
