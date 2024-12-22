@@ -15,8 +15,13 @@ pub mod typing;
 pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon> {
     let mut team = team.clone();
     let mut rng = rand::thread_rng();
+    
+    let mut replacement = Pokemon::random(pool);
+    while team.contains(&replacement) {
+        replacement = Pokemon::random(pool);
+    }
     let index = rng.gen_range(0..team.len());
-    team[index] = Pokemon::random(pool);
+    team[index] = replacement;
     team
 }
 

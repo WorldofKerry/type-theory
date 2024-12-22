@@ -60,7 +60,7 @@ impl TypeTrait for Typing {
 #[derive(Clone, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Deserialize, Serialize)]
 pub struct Move {
     pub name: String,
-    pub typing: Typing,
+    pub typing: BasicType,
     pub power: Option<u32>,
 }
 

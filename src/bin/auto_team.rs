@@ -56,7 +56,8 @@ fn main() {
                 .map(|p| &p.species)
                 .sorted()
                 .for_each(|p| print!("{:?} ", p));
-            println!("{}", serde_json::to_string(&*best_team.lock().unwrap()).unwrap());
+            println!();
+            println!("{}", serde_json::to_string(&team).unwrap());
             println!();
             best_team.lock().unwrap().clone_from(&team);
         } else {
