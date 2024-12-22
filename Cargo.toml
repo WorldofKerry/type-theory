@@ -13,3 +13,7 @@ rayon = "1.10.0"
 serde = { version = "1.0.216", features = ["derive"] }
 serde_json = "1.0.134"
 strum = { version = "0.26.3", features = ["derive"] }
+
+[[bin]]
+name = "auto-team"
+path = "src/bin/auto_team.rs"

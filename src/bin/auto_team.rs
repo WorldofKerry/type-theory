@@ -1,5 +1,6 @@
-use core::f64;
+/// Given a pkhex dump of available Pokemon, stochastically finds the best team based on a scoring function
 
+use core::f64;
 use type_theory::analysis::{resistance, offensive_coverage, simulated_annealing};
 use type_theory::pokemon::Pokemon;
 use type_theory::analysis::autoscale::AutoScale;
