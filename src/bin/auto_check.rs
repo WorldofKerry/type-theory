@@ -3,18 +3,27 @@ use type_theory::{pokemon::Pokemon, typing::TypeTrait};
 
 /// Builds a team, selecting the pokemon that checks the most opposing pokemon in a pool
 fn main() {
-    let mut remaining = Pokemon::all_unique_type_chart().collect::<BTreeSet<_>>();
+    let team_size = 4;
+    let counter_weight = 0.75;
+    let check_weight = 1.0 - counter_weight;
+
+    let mut remaining_not_countered = Pokemon::all_unique_type_chart().collect::<BTreeSet<_>>();
+    let mut remaining_not_checked = Pokemon::all_unique_type_chart().collect::<BTreeSet<_>>();
+
     let mut team = BTreeSet::new();
     let pool: BTreeSet<Pokemon> = Pokemon::from_pkhex_dump("data/Box Data Dump.csv")
         .into_iter()
         .collect();
-    while !remaining.is_empty() && team.len() < 6 {
+
+    while (!remaining_not_countered.is_empty() || !remaining_not_checked.is_empty())
+        && team.len() < team_size
+    {
         let best = pool
             .difference(&team)
             .cloned()
             .map(|p1| {
                 (
-                    remaining
+                    remaining_not_countered
                         .iter()
                         .filter(|p2| {
                             false
@@ -24,9 +33,15 @@ fn main() {
                             // Or not weak to any stab and hits back supereffectively
                             || (p2.typing.iter().all(|t| p1.defense().get(*t) <= 1.0)
                                 && p1.typing.iter().any(|t| p2.defense().get(*t) > 1.0))
-                            // Or at least two members in team and is neutral in both directions
-                            || (team.len() >= 2
-                                && p2.typing.iter().all(|t| p1.defense().get(*t) <= 1.0)
+                        })
+                        .cloned()
+                        .collect::<BTreeSet<_>>(),
+                    remaining_not_checked
+                        .iter()
+                        .filter(|p2| {
+                            false
+                            // Neutral in both directions
+                            || (p2.typing.iter().all(|t| p1.defense().get(*t) <= 1.0)
                                 && p1.typing.iter().any(|t| p2.defense().get(*t) >= 1.0))
                         })
                         .cloned()
@@ -34,20 +49,38 @@ fn main() {
                     p1,
                 )
             })
-            .max_by_key(|(set, _)| set.len())
+            .max_by_key(|(counter_set, check_set, _)| {
+                (counter_set.len() as f64 * 100.0 * counter_weight
+                    + check_set.len() as f64 * 100.0 * check_weight) as i32
+            })
             .unwrap();
-        remaining = remaining.difference(&best.0).cloned().collect();
-        println!(
-            "{:?}: checks {:?} {:?}",
-            best.1.species,
-            best.0.len(),
-            best.0
-                .iter()
-                .map(|p| format!("{:?} {:?}", p.typing, p.ability))
-                .collect::<Vec<_>>()
-        );
+        remaining_not_countered = remaining_not_countered
+            .difference(&best.0)
+            .cloned()
+            .collect();
+        remaining_not_checked = remaining_not_checked
+            .difference(&best.1)
+            .cloned()
+            .collect();
+        if best.0.len() + best.1.len() <= 10 {
+            println!(
+                "{:?}: counters {:?} checks {:?}, counters {:?} checks {:?}",
+                best.2.species,
+                best.0.len(),
+                best.1.len(),
+                best.0.iter().map(|p| format!("{:?} {:?}", p.typing, p.ability)).collect::<Vec<_>>(),
+                best.1.iter().map(|p| format!("{:?} {:?}", p.typing, p.ability)).collect::<Vec<_>>(),
+            );
+        } else {
+            println!(
+                "{:?}: counters {:?} checks {:?}",
+                best.2.species,
+                best.0.len(),
+                best.1.len(),
+            );
+        }
         println!();
-        team.insert(best.1);
+        team.insert(best.2);
     }
-    println!("remaining: {:?}", remaining);
+    println!("remaining not countered {:?}, not checked {:?} {:?}", remaining_not_countered.len(), remaining_not_checked.len(), remaining_not_checked);
 }
