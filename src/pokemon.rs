@@ -1,9 +1,9 @@
-use std::{collections::BTreeSet, str::FromStr};
+use crate::typing::{combine_defense_charts, Ability, BasicType, Relationship, TypeTrait};
 use itertools::Itertools;
 use rand::seq::SliceRandom;
-use strum::IntoEnumIterator;
 use serde::{Deserialize, Serialize};
-use crate::typing::{combine_defense_charts, Ability, BasicType, Relationship, TypeTrait};
+use std::{collections::BTreeSet, str::FromStr};
+use strum::IntoEnumIterator;
 
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Hash, Deserialize, Serialize)]
 pub struct Typing(BTreeSet<BasicType>);
@@ -37,7 +37,9 @@ impl Typing {
         BasicType::iter().map(Typing::from)
     }
     fn dual() -> impl Iterator<Item = Typing> {
-        BasicType::iter().combinations(2).map(|c| Typing::from((c[0], c[1])))
+        BasicType::iter()
+            .combinations(2)
+            .map(|c| Typing::from((c[0], c[1])))
     }
     fn all() -> impl Iterator<Item = Typing> {
         Typing::mono().chain(Typing::dual())
@@ -132,11 +134,9 @@ impl Pokemon {
                         Err(_) => None,
                     },
                 };
-                let typing = { 
-                    let matched_pokemon = all_pokemon
-                    .iter()
-                    .find(|p| p.species == species)
-                    .unwrap();
+                let typing = {
+                    let matched_pokemon =
+                        all_pokemon.iter().find(|p| p.species == species).unwrap();
                     let form = record.get(51).unwrap();
                     if form != "0" {
                         match matched_pokemon.species.as_str() {
@@ -151,7 +151,7 @@ impl Pokemon {
                             },
                             "Gastrodon" => match form {
                                 _ => matched_pokemon.typing.clone(),
-                            }
+                            },
                             _ => panic!("Unhandled form for {species:?} with form {form:?}"),
                         }
                     } else {
@@ -191,10 +191,9 @@ impl Pokemon {
 
     pub fn all() -> Vec<Pokemon> {
         // dexnum,name,generation,type1,type2,species,height,weight,ability1,ability2,hidden_ability,hp,attack,defense,sp_atk,sp_def,speed,total,ev_yield,catch_rate,base_friendship,base_exp,growth_rate,egg_group1,egg_group2,percent_male,percent_female,egg_cycles,special_group
-        let file = "data/pokemon_data.csv";
-
-        let mut rdr = csv::Reader::from_path(file).unwrap();
-        rdr.records()
+        csv::Reader::from_path("data/pokemon_data.csv")
+            .unwrap()
+            .records()
             .flat_map(|r| {
                 let record = r.unwrap();
                 let name = record.get(1).unwrap().to_string();
@@ -227,6 +226,13 @@ impl Pokemon {
                 })
             })
             .collect()
+    }
+
+    // All pokemon, unique by typing and ability
+    pub fn all_unique_type_chart() -> impl Iterator<Item = Pokemon> {
+        Pokemon::all()
+            .into_iter()
+            .unique_by(|p| (p.typing.clone(), p.ability.clone()))
     }
 
     pub fn all_type_combinations_and_abilities() -> impl Iterator<Item = Pokemon> {
