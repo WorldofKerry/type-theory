@@ -69,19 +69,22 @@ impl Move {
         let file = "data/metadata_pokemon_moves.csv";
         let mut rdr = csv::Reader::from_path(file).unwrap();
         rdr.records()
-            .map(|r| {
+            .filter_map(|r| {
                 let record = r.unwrap();
                 let name = record.get(0).unwrap().to_string();
-                let typing = BasicType::from_str(record.get(6).unwrap()).unwrap().into();
+                let typing = match BasicType::from_str(record.get(6).unwrap()) {
+                    Ok(t) => t,
+                    Err(_) => BasicType::Normal,
+                };
                 let power = match record.get(4).unwrap() {
                     "" => None,
                     p => Some(p.parse::<f32>().unwrap() as u32),
                 };
-                Move {
+                Some(Move {
                     name,
                     typing,
                     power,
-                }
+                })
             })
             .collect()
     }
@@ -196,7 +199,10 @@ impl Pokemon {
 
     pub fn all() -> Vec<Pokemon> {
         // dexnum,name,generation,type1,type2,species,height,weight,ability1,ability2,hidden_ability,hp,attack,defense,sp_atk,sp_def,speed,total,ev_yield,catch_rate,base_friendship,base_exp,growth_rate,egg_group1,egg_group2,percent_male,percent_female,egg_cycles,special_group
-        csv::Reader::from_path("data/pokemon_data.csv")
+        let file = "data/pokemon_data_gen5.csv";
+        #[cfg(feature = "gen6")]
+        let file = "data/pokemon_data_gen6+.csv";
+        csv::Reader::from_path(file)
             .unwrap()
             .records()
             .flat_map(|r| {
@@ -322,7 +328,10 @@ mod tests {
     fn test_pokemon_all() {
         let all_pokemon = Pokemon::all();
         // Note that pokemon with multiple abilities that affect the type chart are split into multiple entries
-        assert_eq!(all_pokemon.len(), 3080);
+        let expected_count = 1952;
+        #[cfg(feature = "gen6")]
+        let expected_count = 3080;
+        assert_eq!(all_pokemon.len(), expected_count);
     }
 
     #[test]
@@ -368,6 +377,11 @@ mod tests {
     fn test_all_moves() {
         let moves = Move::all();
         assert_eq!(moves[0].power, Some(40));
-        assert!(moves.len() == 808);
+
+        let expected_move_count = 808;
+        #[cfg(feature = "gen6")]
+        let expected_move_count = 808;
+
+        assert_eq!(moves.len(), expected_move_count);
     }
 }
