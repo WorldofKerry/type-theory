@@ -4,7 +4,7 @@ use type_theory::{pokemon::Pokemon, typing::TypeTrait};
 /// Builds a team, selecting the pokemon that checks the most opposing pokemon in a pool
 fn main() {
     let team_size = 6;
-let counter_weight = 0.5;
+    let counter_weight = 0.5;
     let check_weight = 1.0 - counter_weight;
 
     let mut remaining_not_countered = Pokemon::all_unique_type_chart().collect::<BTreeSet<_>>();
