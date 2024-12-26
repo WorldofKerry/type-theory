@@ -2,7 +2,7 @@ use crate::typing::{combine_defense_charts, Ability, BasicType, Relationship, Ty
 use itertools::Itertools;
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeSet, str::FromStr};
+use std::{collections::BTreeSet, str::FromStr, sync::OnceLock};
 use strum::IntoEnumIterator;
 
 #[derive(Clone, Debug, PartialEq, Eq, Ord, PartialOrd, Hash, Deserialize, Serialize)]
@@ -197,70 +197,78 @@ impl Pokemon {
             .collect()
     }
 
-    pub fn all() -> Vec<Pokemon> {
-        // dexnum,name,generation,type1,type2,species,height,weight,ability1,ability2,hidden_ability,hp,attack,defense,sp_atk,sp_def,speed,total,ev_yield,catch_rate,base_friendship,base_exp,growth_rate,egg_group1,egg_group2,percent_male,percent_female,egg_cycles,special_group
-        let file = "data/pokemon_data_gen5.csv";
-        #[cfg(feature = "gen6")]
-        let file = "data/pokemon_data_gen6+.csv";
-        csv::Reader::from_path(file)
-            .unwrap()
-            .records()
-            .flat_map(|r| {
-                let record = r.unwrap();
-                let name = record.get(1).unwrap().to_string();
-                let typing = match record.get(4).unwrap() {
-                    "" => Typing::from(BasicType::from_str(record.get(3).unwrap()).unwrap()),
-                    t => Typing::from((
-                        BasicType::from_str(record.get(3).unwrap()).unwrap(),
-                        BasicType::from_str(t).unwrap(),
-                    )),
-                };
-                let abilities: Vec<Option<Ability>> = vec![
-                    record.get(8).unwrap(),
-                    record.get(9).unwrap(),
-                    record.get(10).unwrap(),
-                ]
-                .into_iter()
-                .map(|a| match a {
-                    "" => None,
-                    a => match Ability::from_str(a) {
-                        Ok(a) => Some(a),
-                        Err(_) => None,
-                    },
+    pub fn all() -> &'static Vec<Pokemon> {
+        static CELL: OnceLock<Vec<Pokemon>> = OnceLock::new();
+        CELL.get_or_init(|| {
+            // dexnum,name,generation,type1,type2,species,height,weight,ability1,ability2,hidden_ability,hp,attack,defense,sp_atk,sp_def,speed,total,ev_yield,catch_rate,base_friendship,base_exp,growth_rate,egg_group1,egg_group2,percent_male,percent_female,egg_cycles,special_group
+            let file = "data/pokemon_data_gen5.csv";
+            #[cfg(feature = "gen6")]
+            let file = "data/pokemon_data_gen6+.csv";
+            csv::Reader::from_path(file)
+                .unwrap()
+                .records()
+                .flat_map(|r| {
+                    let record = r.unwrap();
+                    let name = record.get(1).unwrap().to_string();
+                    let typing = match record.get(4).unwrap() {
+                        "" => Typing::from(BasicType::from_str(record.get(3).unwrap()).unwrap()),
+                        t => Typing::from((
+                            BasicType::from_str(record.get(3).unwrap()).unwrap(),
+                            BasicType::from_str(t).unwrap(),
+                        )),
+                    };
+                    let abilities: Vec<Option<Ability>> = vec![
+                        record.get(8).unwrap(),
+                        record.get(9).unwrap(),
+                        record.get(10).unwrap(),
+                    ]
+                    .into_iter()
+                    .map(|a| match a {
+                        "" => None,
+                        a => match Ability::from_str(a) {
+                            Ok(a) => Some(a),
+                            Err(_) => None,
+                        },
+                    })
+                    .collect();
+                    abilities.into_iter().map(move |a| Pokemon {
+                        species: name.clone(),
+                        typing: typing.clone(),
+                        ability: a,
+                        moves: vec![],
+                    })
                 })
-                .collect();
-                abilities.into_iter().map(move |a| Pokemon {
-                    species: name.clone(),
-                    typing: typing.clone(),
-                    ability: a,
-                    moves: vec![],
-                })
-            })
-            .chain(
-                // Rotom forms
-                vec![
-                    (BasicType::Electric, BasicType::Fire),
-                    (BasicType::Electric, BasicType::Water),
-                    (BasicType::Electric, BasicType::Ice),
-                    (BasicType::Electric, BasicType::Flying),
-                    (BasicType::Electric, BasicType::Grass),
-                ]
-                .into_iter()
-                .map(|t| Pokemon {
-                    species: "Rotom".into(),
-                    typing: t.into(),
-                    ability: Some(Ability::Levitate),
-                    moves: vec![],
-                }),
-            )
-            .collect()
+                .chain(
+                    // Rotom forms
+                    vec![
+                        (BasicType::Electric, BasicType::Fire),
+                        (BasicType::Electric, BasicType::Water),
+                        (BasicType::Electric, BasicType::Ice),
+                        (BasicType::Electric, BasicType::Flying),
+                        (BasicType::Electric, BasicType::Grass),
+                    ]
+                    .into_iter()
+                    .map(|t| Pokemon {
+                        species: "Rotom".into(),
+                        typing: t.into(),
+                        ability: Some(Ability::Levitate),
+                        moves: vec![],
+                    }),
+                )
+                .collect()
+        })
     }
 
     // All pokemon, unique by typing and ability
-    pub fn all_unique_type_chart() -> impl Iterator<Item = Pokemon> {
-        Pokemon::all()
-            .into_iter()
-            .unique_by(|p| (p.typing.clone(), p.ability.clone()))
+    pub fn all_unique_type_chart() -> &'static Vec<Pokemon> {
+        static CELL: OnceLock<Vec<Pokemon>> = OnceLock::new();
+        CELL.get_or_init(|| {
+            Pokemon::all()
+                .into_iter()
+                .unique_by(|p| (p.typing.clone(), p.ability.clone()))
+                .cloned()
+                .collect()
+        })
     }
 
     pub fn all_type_combinations_and_abilities() -> impl Iterator<Item = Pokemon> {

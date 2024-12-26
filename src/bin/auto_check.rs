@@ -7,8 +7,8 @@ fn main() {
     let counter_weight = 0.5;
     let check_weight = 1.0 - counter_weight;
 
-    let mut remaining_not_countered = Pokemon::all_unique_type_chart().collect::<BTreeSet<_>>();
-    let mut remaining_not_checked = Pokemon::all_unique_type_chart().collect::<BTreeSet<_>>();
+    let mut remaining_not_countered: BTreeSet<Pokemon> = Pokemon::all_unique_type_chart().iter().cloned().collect();
+    let mut remaining_not_checked: BTreeSet<Pokemon> = Pokemon::all_unique_type_chart().iter().cloned().collect();
 
     let mut team = BTreeSet::new();
     let pool: BTreeSet<Pokemon> = Pokemon::from_pkhex_dump("Box Data Dump.csv")

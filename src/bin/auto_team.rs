@@ -13,7 +13,7 @@ pub fn score<const N: usize>(team: &Vec<Pokemon>) -> [f64; N] {
     ret[0] = resistance::per_type_net_resist_weak_count(&team);
     ret[1] = resistance::one_resist_for_each_type(&team);
     ret[2] = resistance::per_type_multiplier(&team, 0.25);
-    let random_pool = Pokemon::random_team(&Pokemon::all_unique_type_chart().collect(), 12).into_iter().collect();
+    let random_pool = Pokemon::random_team(&Pokemon::all_unique_type_chart(), 12).into_iter().collect();
     ret[3] = checks::counter_count(&team, &random_pool) as f64;
     ret[4] = checks::checks_count(&team, &random_pool) as f64;
     ret
@@ -62,7 +62,7 @@ fn main() {
     const N: usize = 5;
     let size = 6;
     let autoscale_global = Mutex::new(AutoScale::new([1.0, 0.5, 0.75, 0.25, 0.75]));
-    let pool = Pokemon::all_unique_type_chart().collect::<Vec<_>>();
+    let pool = Pokemon::all_unique_type_chart();
     // let pool = {
     //     let pool = Pokemon::from_pkhex_dump("Box Data Dump.csv");
     //     pool.iter()
