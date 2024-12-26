@@ -17,3 +17,6 @@ strum = { version = "0.26.3", features = ["derive"] }
 [[bin]]
 name = "auto-team"
 path = "src/bin/auto_team.rs"
+
+#[features]
+gen6 = []

@@ -24,6 +24,7 @@ pub enum BasicType {
     Dragon,
     Dark,
     Steel,
+    #[cfg(feature = "gen6")]
     Fairy,
 }
 
@@ -157,6 +158,7 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
                 ((BasicType::Bug), 0.5),
                 ((BasicType::Rock), 2.0),
                 ((BasicType::Steel), 0.5),
+                #[cfg(feature = "gen6")]
                 ((BasicType::Fairy), 0.5),
             ]),
         ),
@@ -212,6 +214,7 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
                 ((BasicType::Bug), 0.5),
                 ((BasicType::Rock), 0.5),
                 ((BasicType::Dark), 0.5),
+                #[cfg(feature = "gen6")]
                 ((BasicType::Fairy), 2.0),
             ]),
         ),
@@ -224,6 +227,7 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
                 ((BasicType::Ground), 2.0),
                 ((BasicType::Psychic), 2.0),
                 ((BasicType::Bug), 0.5),
+                #[cfg(feature = "gen6")]
                 ((BasicType::Fairy), 0.5),
             ]),
         ),
@@ -304,6 +308,7 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
                 ((BasicType::Grass), 0.5),
                 ((BasicType::Ice), 2.0),
                 ((BasicType::Dragon), 2.0),
+                #[cfg(feature = "gen6")]
                 ((BasicType::Fairy), 2.0),
             ]),
         ),
@@ -315,6 +320,7 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
                 ((BasicType::Bug), 2.0),
                 ((BasicType::Ghost), 0.5),
                 ((BasicType::Dark), 0.5),
+                #[cfg(feature = "gen6")]
                 ((BasicType::Fairy), 2.0),
             ]),
         ),
@@ -334,9 +340,11 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
                 ((BasicType::Rock), 0.5),
                 ((BasicType::Dragon), 0.5),
                 ((BasicType::Steel), 0.5),
+                #[cfg(feature = "gen6")]
                 ((BasicType::Fairy), 0.5),
             ]),
         ),
+        #[cfg(feature = "gen6")]
         (
             Type::Basic(BasicType::Fairy),
             BTreeMap::from([
