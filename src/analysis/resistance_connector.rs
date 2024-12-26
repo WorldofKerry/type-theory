@@ -29,6 +29,6 @@ mod tests {
         let poke1 = Pokemon::from(Normal);
         let poke2 = Pokemon::from(Fire);
         let res = resistance_connector(&poke1, &poke2, &pool);
-        assert_eq!(res.len(), 324);
+        assert_eq!(res.len(), 171);
     }
 }

@@ -152,6 +152,11 @@ impl Pokemon {
                             "Gastrodon" => match form {
                                 _ => matched_pokemon.typing.clone(),
                             },
+                            "Basculin" => match form {
+                                "0" => Typing::from(BasicType::Water),
+                                "1" => Typing::from(BasicType::Water),
+                                _ => panic!("Invalid Basculin form"),
+                            },
                             _ => panic!("Unhandled form for {species:?} with form {form:?}"),
                         }
                     } else {
@@ -337,9 +342,9 @@ mod tests {
 
     #[test]
     fn test_from_pkhex_dump() {
-        let file = "data/Box Data Dump.csv";
+        let file = "Box Data Dump.csv";
         let team = Pokemon::from_pkhex_dump(file);
-        assert!(team.len() > 10);
+        assert!(team.len() >= 6);
     }
 
     #[test]

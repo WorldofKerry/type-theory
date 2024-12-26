@@ -29,11 +29,28 @@ pub enum BasicType {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, EnumIter, Ord, PartialOrd, EnumString, Serialize, Deserialize)]
 pub enum Ability {
+    #[strum(serialize = "Levitate")]
     Levitate,
+    #[strum(serialize = "Heatproof")]
+    Heatproof,
     #[strum(serialize = "Water Absorb")]
     WaterAbsorb,
     #[strum(serialize = "Dry Skin")]
     DrySkin,
+    #[strum(serialize = "Flash Fire")]
+    FlashFire,
+    #[strum(serialize = "Thick Fat")]
+    ThickFat,
+    #[strum(serialize = "Volt Absorb")]
+    VoltAbsorb,
+    #[strum(serialize = "Lightning Rod")]
+    LightningRod,
+    #[strum(serialize = "Sap Sipper")]
+    SapSipper,
+    #[strum(serialize = "Motor Drive")]
+    MotorDrive,
+    #[strum(serialize = "Storm Drain")]
+    StormDrain,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -58,7 +75,7 @@ impl TypeTrait for BasicType {
 
 impl TypeTrait for Ability {
     fn defense(&self) -> Relationship {
-        Relationship::from_raw_parts(get_defense_chart().get(&Type::Ability(*self)).unwrap().clone())
+        Relationship::from_raw_parts(get_defense_chart().get(&Type::Ability(*self)).unwrap_or_else(|| panic!("{:?} not found", self)).clone())
     }
 }
 
@@ -350,5 +367,54 @@ fn get_defense_chart() -> BTreeMap<Type, BTreeMap<BasicType, f32>> {
                 ((BasicType::Fire), 1.25),
             ]),
         ),
+        (
+            Type::Ability(Ability::FlashFire),
+            BTreeMap::from([
+                ((BasicType::Fire), 0.0),
+            ]),
+        ),
+        (
+            Type::Ability(Ability::ThickFat),
+            BTreeMap::from([
+                ((BasicType::Fire), 0.5),
+                ((BasicType::Ice), 0.5),
+            ]),
+        ),
+        (
+            Type::Ability(Ability::VoltAbsorb),
+            BTreeMap::from([
+                ((BasicType::Electric), 0.0),
+            ]),
+        ),
+        (
+            Type::Ability(Ability::LightningRod),
+            BTreeMap::from([
+                ((BasicType::Electric), 0.0),
+            ]),
+        ),
+        (
+            Type::Ability(Ability::SapSipper),
+            BTreeMap::from([
+                ((BasicType::Grass), 0.0),
+            ]),
+        ),
+        (
+            Type::Ability(Ability::MotorDrive),
+            BTreeMap::from([
+                ((BasicType::Electric), 0.0),
+            ]),
+        ),
+        (
+            Type::Ability(Ability::StormDrain),
+            BTreeMap::from([
+                ((BasicType::Water), 0.0),
+            ]),
+        ),
+        (
+            Type::Ability(Ability::Heatproof),
+            BTreeMap::from([
+                ((BasicType::Fire), 0.5),
+            ]),
+        )
     ])
 }

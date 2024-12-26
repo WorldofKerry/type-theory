@@ -3,15 +3,15 @@ use type_theory::{pokemon::Pokemon, typing::TypeTrait};
 
 /// Builds a team, selecting the pokemon that checks the most opposing pokemon in a pool
 fn main() {
-    let team_size = 4;
-    let counter_weight = 0.75;
+    let team_size = 6;
+let counter_weight = 0.5;
     let check_weight = 1.0 - counter_weight;
 
     let mut remaining_not_countered = Pokemon::all_unique_type_chart().collect::<BTreeSet<_>>();
     let mut remaining_not_checked = Pokemon::all_unique_type_chart().collect::<BTreeSet<_>>();
 
     let mut team = BTreeSet::new();
-    let pool: BTreeSet<Pokemon> = Pokemon::from_pkhex_dump("data/Box Data Dump.csv")
+    let pool: BTreeSet<Pokemon> = Pokemon::from_pkhex_dump("Box Data Dump.csv")
         .into_iter()
         .collect();
 
