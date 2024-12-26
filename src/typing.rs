@@ -333,6 +333,7 @@ fn get_defense_chart() -> &'static BTreeMap<Type, BTreeMap<BasicType, f32>> {
                     ((BasicType::Poison), 0.5),
                     ((BasicType::Ground), 2.0),
                     ((BasicType::Flying), 0.5),
+                    ((BasicType::Steel), 2.0),
                 ]),
             ),
             (

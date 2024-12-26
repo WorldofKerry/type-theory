@@ -13,9 +13,8 @@ pub fn score<const N: usize>(team: &Vec<Pokemon>) -> [f64; N] {
     ret[0] = resistance::per_type_net_resist_weak_count(&team);
     ret[1] = resistance::one_resist_for_each_type(&team);
     ret[2] = resistance::per_type_multiplier(&team, 0.25);
-    let random_pool = Pokemon::random_team(&Pokemon::all_unique_type_chart(), 12).into_iter().collect();
+    let random_pool = Pokemon::random_team(&Pokemon::all_unique_type_chart(), 100).into_iter().collect();
     ret[3] = checks::counter_count(&team, &random_pool) as f64;
-    ret[4] = checks::checks_count(&team, &random_pool) as f64;
     ret
 }
 
@@ -57,11 +56,12 @@ fn discard_dominated_teams<const N: usize>(
 }
 
 fn main() {
-    const ITERATIONS: usize = 3;
-    const THREADS: usize = 1;
-    const N: usize = 5;
+    const SIMULATED_ANNEALING_ITERATIONS: usize = 512;
+    const THREAD_COUNT: usize = 10;
+
+    const SCORES_COUNT: usize = 4;
     let size = 6;
-    let autoscale_global = Mutex::new(AutoScale::new([1.0, 0.5, 0.75, 0.25, 0.75]));
+    let autoscale_global = Mutex::new(AutoScale::new([1.0, 0.5, 0.75, 0.75]));
     let pool = Pokemon::all_unique_type_chart();
     // let pool = {
     //     let pool = Pokemon::from_pkhex_dump("Box Data Dump.csv");
@@ -78,12 +78,12 @@ fn main() {
         .add(score(&best_teams.lock().unwrap().iter().next().unwrap()));
 
     rayon::ThreadPoolBuilder::new()
-        .num_threads(THREADS)
+        .num_threads(THREAD_COUNT)
         .build_global()
         .unwrap();
 
     let counter = Arc::new(Mutex::new(1));
-    rayon::iter::repeatn((), ITERATIONS).for_each(|_| {
+    rayon::iter::repeatn((), SIMULATED_ANNEALING_ITERATIONS).for_each(|_| {
         let mut autoscale = autoscale_global.lock().unwrap().clone();
         let team = simulated_annealing(
             Pokemon::random_team(&pool, size),
@@ -96,9 +96,9 @@ fn main() {
         let mut counter = counter.lock().unwrap();
         *counter += 1;
 
-        if *counter % 4 == 0 {
+        if *counter % THREAD_COUNT == 0 || *counter == SIMULATED_ANNEALING_ITERATIONS {
             let mut best_teams = best_teams.lock().unwrap();
-            *best_teams = discard_dominated_teams(score::<N>, &*best_teams);
+            *best_teams = discard_dominated_teams(score::<SCORES_COUNT>, &*best_teams);
             let autoscale = autoscale_global.lock().unwrap();
             let (best_team, best_scores) = compute_best_team(
                 &autoscale,

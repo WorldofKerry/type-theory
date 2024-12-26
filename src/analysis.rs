@@ -2,7 +2,6 @@ use autoscale::AutoScale;
 use rand::Rng;
 use crate::pokemon::Pokemon;
 
-pub mod team_opp_matchup;
 pub mod resistance_connector;
 pub mod complement_matrix;
 pub mod complement_cycle;
@@ -29,9 +28,9 @@ pub fn simulated_annealing<const N: usize>(team: Vec<Pokemon>, pool: &Vec<Pokemo
 ) -> Vec<Pokemon> {
     let mut team_best = team.clone();
     let mut team_good = team;
-    let mut temp = 0.1;
+    let mut temp = 0.5;
     let temp_step = 0.1;
-    let k_max = 100;
+    let k_max = pool.len();
     while temp >= 0.0 {
         for k in 0..k_max {
             let team_new = random_neighbour(team_good.clone(), pool);
