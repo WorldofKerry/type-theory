@@ -230,6 +230,23 @@ impl Pokemon {
                     moves: vec![],
                 })
             })
+            .chain(
+                // Rotom forms
+                vec![
+                    (BasicType::Electric, BasicType::Fire),
+                    (BasicType::Electric, BasicType::Water),
+                    (BasicType::Electric, BasicType::Ice),
+                    (BasicType::Electric, BasicType::Flying),
+                    (BasicType::Electric, BasicType::Grass),
+                ]
+                .into_iter()
+                .map(|t| Pokemon {
+                    species: "Rotom".into(),
+                    typing: t.into(),
+                    ability: Some(Ability::Levitate),
+                    moves: vec![],
+                }),
+            )
             .collect()
     }
 
@@ -305,7 +322,7 @@ mod tests {
     fn test_pokemon_all() {
         let all_pokemon = Pokemon::all();
         // Note that pokemon with multiple abilities that affect the type chart are split into multiple entries
-        assert!(all_pokemon.len() == 3075);
+        assert_eq!(all_pokemon.len(), 3080);
     }
 
     #[test]
