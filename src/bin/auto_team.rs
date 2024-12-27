@@ -43,7 +43,13 @@ fn discard_dominated_teams<const N: usize>(
                 continue;
             }
             let other_team_scores = score(other_team);
-            let all_dominated = dominates(&team_scores, &other_team_scores);
+            let mut all_dominated = true;
+            for (team_score, other_team_score) in team_scores.iter().zip(other_team_scores.iter()) {
+                if team_score <= other_team_score {
+                    all_dominated = false;
+                    break;
+                }
+            }
             if all_dominated {
                 dominated = true;
                 break;
@@ -73,9 +79,7 @@ fn main() {
     const THREAD_COUNT: usize = 10;
 
     const SCORES_COUNT: usize = 3;
-    let size = 6;
-    let autoscale_global: Mutex<AutoScale<SCORES_COUNT>> =
-        Mutex::new(AutoScale::new([1.0, 1.0, 1.0]));
+    let team_size = 6;
     let pool = Pokemon::all_unique_type_chart();
     // let pool = {
     //     let pool = Pokemon::from_pkhex_dump("Box Data Dump.csv");
@@ -85,13 +89,7 @@ fn main() {
     // };
     eprintln!("Pool size: {}", pool.len());
 
-    let best_teams = Arc::new(Mutex::new(BTreeSet::from([Pokemon::random_team(
-        pool, size,
-    )])));
-    autoscale_global
-        .lock()
-        .unwrap()
-        .add(score(best_teams.lock().unwrap().iter().next().unwrap()));
+    let best_teams = Arc::new(Mutex::new(BTreeSet::new()));
 
     rayon::ThreadPoolBuilder::new()
         .num_threads(THREAD_COUNT)
@@ -100,35 +98,17 @@ fn main() {
 
     let counter = Arc::new(Mutex::new(1));
     rayon::iter::repeatn((), SIMULATED_ANNEALING_ITERATIONS).for_each(|_| {
-        let mut autoscale = autoscale_global.lock().unwrap().clone();
         let team = simulated_annealing(
-            Pokemon::random_team(pool, size),
+            Pokemon::random_team(pool, team_size),
             pool,
-            &mut autoscale,
-            score,
+            score::<SCORES_COUNT>,
         );
-        autoscale_global.lock().unwrap().combine(&autoscale);
         best_teams.lock().unwrap().insert(team);
         let mut counter = counter.lock().unwrap();
         *counter += 1;
 
         if *counter % THREAD_COUNT == 0 || *counter == SIMULATED_ANNEALING_ITERATIONS {
             let mut best_teams = best_teams.lock().unwrap();
-            // *best_teams = discard_dominated_teams(score::<SCORES_COUNT>, &best_teams);
-            // let autoscale = autoscale_global.lock().unwrap();
-            // let (best_team, best_scores) = compute_best_team(
-            //     &autoscale,
-            //     score,
-            //     &best_teams,
-            // );
-            // eprint!("{counter:?}: Global best: {best_scores:4.2?} {:?} ", best_teams.len());
-            // best_team.iter()
-            //     .map(|p| &p.species)
-            //     .sorted()
-            //     .for_each(|p| eprint!("{:?} ", p));
-            // eprintln!();
-            // println!("{}", serde_json::to_string(&best_team).unwrap());
-            // eprintln!();
             *best_teams = discard_dominated_teams(score::<SCORES_COUNT>, &best_teams);
             println!("{counter:?}:");
             best_teams

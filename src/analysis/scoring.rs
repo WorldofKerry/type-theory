@@ -15,3 +15,19 @@ pub fn dominates<const N: usize>(
     }
     true
 }
+
+/// Compare two scores, returning the net number of dimensions in which score1 is as good as score2
+pub fn compare<const N: usize>(
+    score1: &[f64; N],
+    score2: &[f64; N],
+) -> isize {
+    let mut count = 0;
+    for (s1, s2) in score1.iter().zip(score2.iter()) {
+        if s1 > s2 {
+            count += 1;
+        } else if s1 < s2 {
+            count -= 1;
+        }
+    }
+    count
+}

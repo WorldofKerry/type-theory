@@ -1,19 +1,20 @@
+use crate::pokemon::Pokemon;
 use autoscale::AutoScale;
 use rand::Rng;
-use crate::pokemon::Pokemon;
-pub mod resistance_connector;
-pub mod complement_matrix;
-pub mod complement_cycle;
-pub mod resistance;
+use scoring::{compare, dominates};
 pub mod autoscale;
-pub mod offensive_coverage;
 pub mod checks;
+pub mod complement_cycle;
+pub mod complement_matrix;
+pub mod offensive_coverage;
+pub mod resistance;
+pub mod resistance_connector;
 pub mod scoring;
 
 pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon> {
     let mut team = team.clone();
     let mut rng = rand::thread_rng();
-    
+
     let mut replacement = Pokemon::random(pool);
     while team.contains(&replacement) {
         replacement = Pokemon::random(pool);
@@ -23,12 +24,14 @@ pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon>
     team
 }
 
-pub fn simulated_annealing<const N: usize>(team: Vec<Pokemon>, pool: &Vec<Pokemon>, autoscale: &mut AutoScale::<N>,
-    score_fn: fn(&Vec<Pokemon>) -> [f64; N]
+pub fn simulated_annealing<const N: usize>(
+    team: Vec<Pokemon>,
+    pool: &Vec<Pokemon>,
+    score_fn: fn(&Vec<Pokemon>) -> [f64; N],
 ) -> Vec<Pokemon> {
     let mut team_best = team.clone();
     let mut team_good = team;
-    let mut temp = 0.5;
+    let mut temp = -(N as f64) / 0.1f64.ln(); // Target acceptance rate of 50%
     let temp_step = 0.1;
     let k_max = pool.len();
     while temp >= 0.0 {
@@ -36,21 +39,21 @@ pub fn simulated_annealing<const N: usize>(team: Vec<Pokemon>, pool: &Vec<Pokemo
             let team_new = random_neighbour(team_good.clone(), pool);
             let scores_good = score_fn(&team_good);
             let scores_new = score_fn(&team_new);
-            autoscale.add(scores_new);
-            
-            let score_good = autoscale.scale(scores_good);
-            let score_new = autoscale.scale(scores_new);
 
-            let delta = score_new - score_good;
-            let delta = if delta.is_nan() { 0.0 } else { delta };
+            let delta = compare(&scores_new, &scores_good) as f64;
             let probability = (delta / temp).exp();
-            
-            if delta >= 0.0 || rand::Rng::gen_bool(&mut rand::thread_rng(), probability) {
+            // println!(
+            //     "scores_good: {:6.2?}, scores_new: {:6.2?}, delta: {:6.2}, probability: {:6.2}, temperature: {:6.2}",
+            //     scores_good, scores_new, delta, probability, temp
+            // );
+
+            if delta > 0.0
+                || rand::Rng::gen_bool(&mut rand::thread_rng(), probability)
+            {
                 team_good = team_new;
             }
 
-            let score_best = autoscale.scale(score_fn(&team_best));
-            if score_good > score_best {
+            if compare(&scores_good, &score_fn(&team_best)) > 0 {
                 team_best = team_good.clone();
             }
         }
