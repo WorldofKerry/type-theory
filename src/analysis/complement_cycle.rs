@@ -1,12 +1,6 @@
-use crate::{
-    pokemon::{Pokemon},
-    team::Team,
-    typing::{combine_defense_charts_immune, BasicType, TypeTrait},
-};
+use crate::pokemon::{Pokemon};
 use itertools::Itertools;
-use rand::Rng;
 use rayon::prelude::*;
-use std::collections::{BTreeMap, HashMap};
 use strum::IntoEnumIterator;
 
 use super::complement_matrix::resistance_complements;
@@ -57,14 +51,12 @@ fn best_complement_cycle(team: &Vec<Pokemon>, pool: &Vec<Pokemon>, size: usize) 
 
 #[cfg(test)]
 mod tests {
+    use crate::typing::BasicType;
     use super::*;
-
-
-
     #[test]
     fn recursive_search_specific_type_complements() {
         use BasicType::*;
-        let team = best_complement_cycle(&vec![Pokemon::from((Steel, Flying))], &Pokemon::all(), 2);
+        let team = best_complement_cycle(&vec![Pokemon::from((Steel, Flying))], Pokemon::all(), 2);
         println!("{team:?}");
     }
 

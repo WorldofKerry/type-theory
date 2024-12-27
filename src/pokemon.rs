@@ -152,9 +152,7 @@ impl Pokemon {
                                 "5" => Typing::from((BasicType::Electric, BasicType::Grass)),
                                 _ => panic!("Invalid Rotom form"),
                             },
-                            "Gastrodon" => match form {
-                                _ => matched_pokemon.typing.clone(),
-                            },
+                            "Gastrodon" => matched_pokemon.typing.clone(),
                             "Basculin" => match form {
                                 "0" => Typing::from(BasicType::Water),
                                 "1" => Typing::from(BasicType::Water),
@@ -177,13 +175,13 @@ impl Pokemon {
                     let name = m.to_string();
                     let name = name.replace("-", " ");
                     if name == "(None)" {
-                        return vec![];
+                        vec![]
                     } else {
-                        return vec![all_moves
+                        vec![all_moves
                             .iter()
                             .find(|m| m.name.to_lowercase() == name.to_lowercase())
-                            .expect(&format!("{name:?}"))
-                            .clone()];
+                            .unwrap_or_else(|| panic!("{name:?}"))
+                            .clone()]
                     }
                 })
                 .collect();
@@ -264,8 +262,8 @@ impl Pokemon {
         static CELL: OnceLock<Vec<Pokemon>> = OnceLock::new();
         CELL.get_or_init(|| {
             Pokemon::all()
-                .into_iter()
-                .unique_by(|p| (p.typing.clone(), p.ability.clone()))
+                .iter()
+                .unique_by(|p| (p.typing.clone(), p.ability))
                 .cloned()
                 .collect()
         })

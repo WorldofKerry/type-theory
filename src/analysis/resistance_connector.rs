@@ -19,7 +19,7 @@ pub fn resistance_connector(
 
 #[cfg(test)]
 mod tests {
-    use crate::{pokemon::Typing, typing::Type};
+    
     use crate::typing::BasicType::*;
     use super::*;
 

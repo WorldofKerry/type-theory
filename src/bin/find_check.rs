@@ -1,6 +1,5 @@
 use type_theory::{analysis::checks::counters, pokemon::Pokemon, typing::{BasicType, TypeTrait}
 };
-use type_theory::analysis::checks::checks;
 
 /// Given a team, finds appropriate checks for an opposing Pokemon
 fn main() {
@@ -16,7 +15,7 @@ let opposing_pokemon = Pokemon::from((Poison, Dark));
             let stab_resistance: Vec<(BasicType, f32)> = opposing_pokemon
                 .typing
                 .iter()
-                .map(|t| (t.clone(), p.defense().get(*t)))
+                .map(|t| (*t, p.defense().get(*t)))
                 .collect();
             println!("{:?} {:?}", p.species, stab_resistance);
             for move_ in p.moves.iter().filter(|m| match m.power {
