@@ -34,6 +34,8 @@ pub fn checks_count(team: &Vec<Pokemon>, pool: &BTreeSet<Pokemon>) -> usize {
 }
 
 /// Return uncountered counters
+/// Biased towards Pokemon that have very few counters, e.g. Flying/Ground, Electric/Levitate
+/// Biased towards Pokemon with ice weakness, as ice does not resist any time it is strong against
 pub fn counter_balance(team: &Vec<Pokemon>) -> Vec<Pokemon> {
     let opposing_checks = Pokemon::all_unique_type_chart().iter().filter(
         |p| team.iter().any(|t| counters(p, t))

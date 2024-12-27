@@ -2,7 +2,10 @@ use strum::IntoEnumIterator;
 
 use crate::{pokemon::Pokemon, typing::{BasicType, TypeTrait}};
 
-/// For every type, log score on the number of resistances to that type
+use super::scoring::reversed_elu;
+
+/// For every type, compute net number of Pokemon resisting and weak to that type
+/// Biased towards Pokemon with high resistance-to-weakness ratio, e.g. Water/Ground, Bug/Steel
 pub fn one_resist_for_each_type(team: &Vec<Pokemon>) -> f64 {
     let team_defenses = team.iter().map(|poke| poke.defense()).collect::<Vec<_>>();
     let mut score = 0.0;
@@ -16,6 +19,7 @@ pub fn one_resist_for_each_type(team: &Vec<Pokemon>) -> f64 {
 }
 
 /// For every type, score on product of weak/resist multipliers
+/// Biased towards Pokemon with immunities
 pub fn per_type_multiplier(team: &Vec<Pokemon>, immune_multiplier: f64) -> f64 {
     let team_defenses = team.iter().map(|poke| poke.defense()).collect::<Vec<_>>();
     let mut score = 0.0;
@@ -28,7 +32,9 @@ pub fn per_type_multiplier(team: &Vec<Pokemon>, immune_multiplier: f64) -> f64 {
                 multiplier *= def.get(t) as f64;
             }
         }
-        score += -multiplier;
+        let normalized = -multiplier.log2();
+        let net = reversed_elu(normalized);
+        score += net;
     }
     score
 }
@@ -41,13 +47,8 @@ pub fn per_type_net_resist_weak_count(team: &Vec<Pokemon>) -> f64 {
         let weak_count = team_defenses.iter().filter(|def| def.get(t) > 1.0).count();
         let resist_count = team_defenses.iter().filter(|def| def.get(t) < 1.0).count();
         let diff = resist_count as f64 - weak_count as f64;
-        if diff <= 0.0 {
-            // Linear penalty for more weaknesses
-            score += diff;
-        } else {
-            // Logarithmic reward for more resistances
-            score += 1.0 - 1.0 / (diff + 1.0);
-        }
+        let net = reversed_elu(diff);
+        score += net;
     }
     score
 }

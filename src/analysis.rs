@@ -1,7 +1,6 @@
 use autoscale::AutoScale;
 use rand::Rng;
 use crate::pokemon::Pokemon;
-
 pub mod resistance_connector;
 pub mod complement_matrix;
 pub mod complement_cycle;
@@ -9,6 +8,7 @@ pub mod resistance;
 pub mod autoscale;
 pub mod offensive_coverage;
 pub mod checks;
+pub mod scoring;
 
 pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon> {
     let mut team = team.clone();
@@ -45,21 +45,13 @@ pub fn simulated_annealing<const N: usize>(team: Vec<Pokemon>, pool: &Vec<Pokemo
             let delta = if delta.is_nan() { 0.0 } else { delta };
             let probability = (delta / temp).exp();
             
-            // println!("Temp: {temp:5.2?} Delta: {:5.2?}, Probability: {:5.2?}", delta, probability);
             if delta >= 0.0 || rand::Rng::gen_bool(&mut rand::thread_rng(), probability) {
                 team_good = team_new;
-                // println!("Accepted {temp:5.2?}: old {:?}, new {:?} ", score_good, score_new);
-                // team_good.iter().for_each(|p| print!("{:?} ", p.species));
-                // println!();
             }
 
             let score_best = autoscale.scale(score_fn(&team_best));
             if score_good > score_best {
                 team_best = team_good.clone();
-                // print!("Local best: temp {:?}, k {:?}, old {:?}, new {:?} ", temp, k, score_best, score_good);
-                // print!("Local best: temp {temp:5.2?}, scores: {scores_new:5.2?} "); 
-                // team_best.iter().for_each(|p| print!("{:?} ", p.species));
-                // println!();
             }
         }
         temp -= temp_step;
