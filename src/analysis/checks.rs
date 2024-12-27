@@ -33,13 +33,13 @@ pub fn checks_count(team: &Vec<Pokemon>, pool: &BTreeSet<Pokemon>) -> usize {
         .count()
 }
 
-/// Return unchecked checks
-pub fn check_balance(team: &Vec<Pokemon>) -> Vec<Pokemon> {
+/// Return uncountered counters
+pub fn counter_balance(team: &Vec<Pokemon>) -> Vec<Pokemon> {
     let opposing_checks = Pokemon::all_unique_type_chart().into_iter().filter(
-        |p| team.iter().any(|t| checks(p, t))
+        |p| team.iter().any(|t| counters(p, t))
     );
     opposing_checks.into_iter().filter(
-        |p| !team.iter().any(|t| checks(t, p))
+        |p| !team.iter().any(|t| counters(t, p))
     ).cloned().collect()
 }
 
@@ -59,9 +59,10 @@ mod test {
     #[test]
     fn test_balance() {
         let team = vec![
-            Pokemon::from((Fire, Steel)),
+            Pokemon::from((Flying, Ground)),
+            Pokemon::from((Rock, Ghost)),
         ];
-        let balance = check_balance(&team);
+        let balance = counter_balance(&team);
         println!("{:?}", balance);
     }
 }
