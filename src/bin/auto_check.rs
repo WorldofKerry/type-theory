@@ -1,5 +1,5 @@
 use std::collections::BTreeSet;
-use type_theory::{pokemon::Pokemon, typing::TypeTrait};
+use type_theory::{injest::parse_pkhex_dump, pokemon::Pokemon, typing::TypeTrait};
 
 /// Builds a team, selecting the pokemon that checks the most opposing pokemon in a pool
 fn main() {
@@ -11,7 +11,7 @@ fn main() {
     let mut remaining_not_checked: BTreeSet<Pokemon> = Pokemon::all_unique_type_chart().iter().cloned().collect();
 
     let mut team = BTreeSet::new();
-    let pool: BTreeSet<Pokemon> = Pokemon::from_pkhex_dump("Box Data Dump.csv")
+    let pool: BTreeSet<Pokemon> = parse_pkhex_dump("Box Data Dump.csv")
         .into_iter()
         .collect();
 

@@ -3,6 +3,7 @@ use core::f64;
 use itertools::Itertools;
 use rayon::iter::ParallelIterator;
 use type_theory::analysis::scoring::{is_better, dominates};
+use type_theory::injest::{parse_names, parse_pkhex_dump};
 use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 use type_theory::analysis::autoscale::AutoScale;
@@ -75,18 +76,19 @@ pub fn score<const N: usize>(team: &Vec<Pokemon>) -> [f64; N] {
 }
 
 fn main() {
-    const SIMULATED_ANNEALING_ITERATIONS: usize = 512;
-    const THREAD_COUNT: usize = 10;
+    const SIMULATED_ANNEALING_ITERATIONS: usize = 100;
+    const THREAD_COUNT: usize = 6;
 
     const SCORES_COUNT: usize = 3;
     let team_size = 6;
-    let pool = Pokemon::all_unique_type_chart();
-    // let pool = {
-    //     let pool = Pokemon::from_pkhex_dump("Box Data Dump.csv");
-    //     pool.iter()
-    //         .for_each(|p| eprintln!("{:?} {:?} {:?}", p.species, p.typing, p.ability));
-    //     pool
-    // };
+    // let pool = Pokemon::all_unique_type_chart();
+    let pool = {
+        // let pool = parse_pkhex_dump("Box Data Dump.csv");
+        let pool = parse_names("unbound_pkm.txt");
+        pool.iter()
+            .for_each(|p| eprintln!("{:?} {:?} {:?}", p.species, p.typing, p.ability));
+        pool
+    };
     eprintln!("Pool size: {}", pool.len());
 
     let best_teams = Arc::new(Mutex::new(BTreeSet::new()));
@@ -99,8 +101,8 @@ fn main() {
     let counter = Arc::new(Mutex::new(1));
     rayon::iter::repeatn((), SIMULATED_ANNEALING_ITERATIONS).for_each(|_| {
         let team = simulated_annealing(
-            Pokemon::random_team(pool, team_size),
-            pool,
+            Pokemon::random_team(&pool, team_size),
+            &pool,
             score::<SCORES_COUNT>,
         );
         best_teams.lock().unwrap().insert(team);

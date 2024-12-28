@@ -19,4 +19,5 @@ name = "auto-team"
 path = "src/bin/auto_team.rs"
 
 [features]
+default = ["gen6"]
 gen6 = []
