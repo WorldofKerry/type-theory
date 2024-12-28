@@ -1,7 +1,7 @@
 use crate::pokemon::Pokemon;
 use autoscale::AutoScale;
 use rand::Rng;
-use scoring::{compare, dominates};
+use scoring::{is_better, dominates};
 pub mod autoscale;
 pub mod checks;
 pub mod complement_cycle;
@@ -40,7 +40,7 @@ pub fn simulated_annealing<const N: usize>(
             let scores_good = score_fn(&team_good);
             let scores_new = score_fn(&team_new);
 
-            let delta = compare(&scores_new, &scores_good) as f64;
+            let delta = is_better(&scores_new, &scores_good) as f64;
             let probability = (delta / temp).exp();
             // println!(
             //     "scores_good: {:6.2?}, scores_new: {:6.2?}, delta: {:6.2}, probability: {:6.2}, temperature: {:6.2}",
@@ -53,7 +53,7 @@ pub fn simulated_annealing<const N: usize>(
                 team_good = team_new;
             }
 
-            if compare(&scores_good, &score_fn(&team_best)) > 0 {
+            if is_better(&scores_good, &score_fn(&team_best)) > 0 {
                 team_best = team_good.clone();
             }
         }

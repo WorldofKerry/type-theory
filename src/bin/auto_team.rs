@@ -2,7 +2,7 @@
 use core::f64;
 use itertools::Itertools;
 use rayon::iter::ParallelIterator;
-use type_theory::analysis::scoring::dominates;
+use type_theory::analysis::scoring::{is_better, dominates};
 use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 use type_theory::analysis::autoscale::AutoScale;
@@ -117,8 +117,11 @@ fn main() {
                     let scores = score::<SCORES_COUNT>(team);
                     (scores, team)
                 })
+                .sorted_by(|(scores1, _), (scores2, _)| {
+                    scores1.partial_cmp(scores2).unwrap_or_else(|| panic!("{:?} {:?}", scores1, scores2))
+                })
                 .for_each(|(scores, team)| {
-                    eprint!("{scores:4.2?} ");
+                    eprint!("{scores:7.3?} ");
                     team.iter()
                         .map(|p| &p.species)
                         .sorted()

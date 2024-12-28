@@ -6,7 +6,7 @@ use super::complement_matrix::resistance_complements;
 pub fn resistance_connector(
     poke1: &Pokemon,
     poke2: &Pokemon,
-    pool: &Vec<Pokemon>,
+    pool: &[Pokemon],
 ) -> Vec<(Pokemon, i32, i32)> {
     pool.iter()
         .map(|poke3| {

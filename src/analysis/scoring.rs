@@ -16,8 +16,8 @@ pub fn dominates<const N: usize>(
     true
 }
 
-/// Compare two scores, returning the net number of dimensions in which score1 is as good as score2
-pub fn compare<const N: usize>(
+/// Compare two scores, returning the net number of dimensions in which score1 is better than score2
+pub fn is_better<const N: usize>(
     score1: &[f64; N],
     score2: &[f64; N],
 ) -> isize {
@@ -30,4 +30,26 @@ pub fn compare<const N: usize>(
         }
     }
     count
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    #[test]
+    fn test_compare_correctness() {
+        let score1 = [1.0, 2.0, 3.0];
+        let score2 = [1.0, 2.0, 3.0];
+        assert_eq!(is_better(&score1, &score2), 0);
+        assert_eq!(is_better(&score2, &score1), 0);
+
+        let score1 = [1.0, 2.0, 3.0];
+        let score2 = [1.0, 2.0, 2.0];
+        assert_eq!(is_better(&score1, &score2), 1);
+        assert_eq!(is_better(&score2, &score1), -1);
+
+        let score1 = [f64::NAN, 2.0, 3.0];
+        let score2 = [1.0, 2.0, 2.0];
+        assert_eq!(is_better(&score1, &score2), 1);
+        assert_eq!(is_better(&score2, &score1), -1);
+    }
 }
