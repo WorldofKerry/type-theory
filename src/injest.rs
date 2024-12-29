@@ -82,22 +82,25 @@ pub fn parse_pkhex_dump(file: &str) -> Vec<Pokemon> {
 }
 
 /// Parses a file of Pokemon names in each line
-pub fn parse_names(file: &str) -> Vec<Pokemon> {
+pub fn parse_names_file(file: &str) -> Vec<Pokemon> {
+    parse_names(std::fs::read_to_string(file).unwrap().lines()).collect()
+}
+
+/// Parses a Pokemon name strings to a a list of Pokemon
+pub fn parse_names<'a, T: IntoIterator<Item = &'a str>>(names: T) -> impl Iterator<Item = Pokemon> + use <'a, T> {
     let all_pokemon = Pokemon::all();
-    std::fs::read_to_string(file)
-        .unwrap()
-        .lines()
-        .map(|line| {
-            let species = line.to_string();
-            let matched_pokemon = all_pokemon.iter().find(|p| p.species == species).unwrap();
-            Pokemon {
-                species,
-                typing: matched_pokemon.typing.clone(),
-                ability: None,
-                moves: vec![],
-            }
-        })
-        .collect()
+    names.into_iter().map(move |name| {
+        let species = name.to_string();
+        let matched_pokemon = all_pokemon.iter().find(|p| p.species == species).unwrap_or_else(|| {
+            panic!("Could not find {species:?} in the list of all Pokemon");
+        });
+        Pokemon {
+            species,
+            typing: matched_pokemon.typing.clone(),
+            ability: None,
+            moves: vec![],
+        }
+    })
 }
 
 #[cfg(test)]

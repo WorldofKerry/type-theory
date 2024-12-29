@@ -3,7 +3,7 @@ use core::f64;
 use itertools::Itertools;
 use rayon::iter::ParallelIterator;
 use type_theory::analysis::scoring::{is_better, dominates};
-use type_theory::injest::{parse_names, parse_pkhex_dump};
+use type_theory::injest::{parse_names_file, parse_pkhex_dump};
 use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 use type_theory::analysis::autoscale::AutoScale;
@@ -84,7 +84,7 @@ fn main() {
     // let pool = Pokemon::all_unique_type_chart();
     let pool = {
         // let pool = parse_pkhex_dump("Box Data Dump.csv");
-        let pool = parse_names("unbound_pkm.txt");
+        let pool = parse_names_file("unbound_pkm.txt");
         pool.iter()
             .for_each(|p| eprintln!("{:?} {:?} {:?}", p.species, p.typing, p.ability));
         pool
@@ -112,7 +112,7 @@ fn main() {
         if *counter % THREAD_COUNT == 0 || *counter == SIMULATED_ANNEALING_ITERATIONS {
             let mut best_teams = best_teams.lock().unwrap();
             *best_teams = discard_dominated_teams(score::<SCORES_COUNT>, &best_teams);
-            println!("{counter:?}:");
+            eprintln!("{counter:?}:");
             best_teams
                 .iter()
                 .map(|team| {
@@ -129,6 +129,7 @@ fn main() {
                         .sorted()
                         .for_each(|p| eprint!("{:?} ", p));
                     eprintln!();
+                    println!("{}", serde_json::to_string(&team).unwrap());
                 });
         }
     })

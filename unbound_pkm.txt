@@ -6,7 +6,6 @@ Roggenrola
 Hoothoot
 Snorunt
 Spheal
-Bergmite
 Zubat
 Slowpoke
 Poliwag
@@ -16,3 +15,12 @@ Shellos
 Inkay
 Electrike
 Riolu
+Oricorio
+Drifloon
+Zapdos
+Xatu
+Panpour
+Pansage
+Pansear
+Comfey
+Cutiefly

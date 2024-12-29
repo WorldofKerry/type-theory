@@ -3,6 +3,7 @@ use type_theory::{injest::parse_pkhex_dump, pokemon::Pokemon, typing::TypeTrait}
 
 /// Builds a team, selecting the pokemon that checks the most opposing pokemon in a pool
 fn main() {
+    return; // don't think this is useful anymore, can delete?
     let team_size = 6;
     let counter_weight = 0.5;
     let check_weight = 1.0 - counter_weight;

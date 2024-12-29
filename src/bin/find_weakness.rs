@@ -1,9 +1,9 @@
-use type_theory::{analysis::checks::{self}, pokemon::Pokemon
+use type_theory::{analysis::checks::{self}, injest::parse_names, pokemon::Pokemon
 };
 
 /// Given a team, finds appropriate checks for an opposing Pokemon
 fn main() {
-    let team: Vec<Pokemon> = serde_json::from_str(r#"[{"species":"Tyranitar","typing":["Rock","Dark"],"ability":null,"moves":[]},{"species":"Croagunk","typing":["Fighting","Poison"],"ability":"DrySkin","moves":[]},{"species":"Gyarados","typing":["Water","Flying"],"ability":null,"moves":[]},{"species":"Bronzor","typing":["Psychic","Steel"],"ability":"Levitate","moves":[]},{"species":"Cacturne","typing":["Grass","Dark"],"ability":"WaterAbsorb","moves":[]},{"species":"Rotom","typing":["Fire","Electric"],"ability":"Levitate","moves":[]}]"#).unwrap();
+    let team: Vec<Pokemon> = serde_json::from_str(r#"[{"species":"Comfey","typing":["Fairy"],"ability":null,"moves":[]},{"species":"Ducklett","typing":["Water","Flying"],"ability":null,"moves":[]},{"species":"Inkay","typing":["Psychic","Dark"],"ability":null,"moves":[]},{"species":"Electrike","typing":["Electric"],"ability":null,"moves":[]},{"species":"Wingull","typing":["Water","Flying"],"ability":null,"moves":[]},{"species":"Beldum","typing":["Psychic","Steel"],"ability":null,"moves":[]}]"#).unwrap();
 
     
     let unchecked_checks = checks::counter_balance(&team);
