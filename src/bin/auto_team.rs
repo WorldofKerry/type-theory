@@ -2,12 +2,12 @@
 use core::f64;
 use itertools::Itertools;
 use rayon::iter::ParallelIterator;
-use type_theory::analysis::scoring::{is_better, dominates};
-use type_theory::injest::{parse_names_file, parse_pkhex_dump};
 use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 use type_theory::analysis::autoscale::AutoScale;
+use type_theory::analysis::scoring::{dominates, is_better};
 use type_theory::analysis::{checks, offensive_coverage, resistance, simulated_annealing};
+use type_theory::injest::{parse_names_file, parse_pkhex_dump};
 use type_theory::pokemon::Pokemon;
 
 fn compute_best_team<const N: usize>(
@@ -46,12 +46,14 @@ fn discard_dominated_teams<const N: usize>(
             let other_team_scores = score(other_team);
             let mut all_dominated = true;
             for (team_score, other_team_score) in team_scores.iter().zip(other_team_scores.iter()) {
-                if team_score <= other_team_score {
+                if team_score >= other_team_score {
                     all_dominated = false;
                     break;
                 }
             }
             if all_dominated {
+                // println!("{:?} dominated by {:?}", team.iter().map(|p| &p.species).collect::<Vec<_>>(), other_team.iter().map(|p| &p.species).collect::<Vec<_>>());
+                // println!("{:?} dominated by {:?}", team_scores, other_team_scores);
                 dominated = true;
                 break;
             }
@@ -120,7 +122,9 @@ fn main() {
                     (scores, team)
                 })
                 .sorted_by(|(scores1, _), (scores2, _)| {
-                    scores1.partial_cmp(scores2).unwrap_or_else(|| panic!("{:?} {:?}", scores1, scores2))
+                    scores1
+                        .partial_cmp(scores2)
+                        .unwrap_or_else(|| panic!("{:?} {:?}", scores1, scores2))
                 })
                 .for_each(|(scores, team)| {
                     eprint!("{scores:7.3?} ");
@@ -138,7 +142,7 @@ fn main() {
 #[cfg(test)]
 mod test {
     use super::*;
-    use type_theory::typing::BasicType::*;
+    use type_theory::{injest::parse_names, typing::BasicType::*};
 
     #[test]
     fn test_score_trio_cores() {
@@ -163,5 +167,71 @@ mod test {
         ];
         let scores = score::<5>(&team);
         println!("{scores:?}");
+    }
+
+    #[test]
+    fn test_discard_bad_team() {
+        // Ensure the inferior team is discarded
+        // Depends on how the score function is defined
+        let teams: BTreeSet<Vec<Pokemon>> = BTreeSet::from([
+            parse_names(vec![
+                "Beldum", "Comfey", "Ducklett", "Geodude", "Houndour", "Pansage",
+            ])
+            .collect(),
+            parse_names(vec![
+                "Cutiefly",
+                "Drilbur",
+                "Ducklett",
+                "Electrike",
+                "Houndour",
+                "Nidoran♂ (male)",
+            ])
+            .collect(),
+        ]);
+        let after = discard_dominated_teams(score::<3>, &teams);
+        for team in &after {
+            team.iter().for_each(|p| eprint!("{:?} ", p.species));
+            eprintln!();
+        }
+        assert_eq!(after.len(), 1);
+    }
+
+    #[test]
+    fn test_discard_identital_score() {
+        // Discard teams with identical
+        let teams: BTreeSet<Vec<Pokemon>> = BTreeSet::from([
+            parse_names(vec![
+                "Beldum", "Comfey", "Ducklett", "Geodude", "Houndour", "Pansage",
+            ])
+            .collect(),
+            parse_names(vec![
+                "Beldum",
+                "Comfey",
+                "Ducklett",
+                "Geodude",
+                "Houndour",
+                "Rillaboom",
+            ])
+            .collect(),
+        ]);
+        let after = discard_dominated_teams(score::<3>, &teams);
+        assert_eq!(after.len(), 2); // Keep both teams if identical scores but different members
+    }
+
+    #[test]
+    fn test_discard_identital_team() {
+        // Discard teams with identical
+        let teams: BTreeSet<Vec<Pokemon>> = BTreeSet::from([
+            parse_names(vec![
+                "Beldum", "Comfey", "Ducklett", "Geodude", "Houndour", "Pansage",
+            ])
+            .collect(),
+            parse_names(vec![
+                "Beldum", "Comfey", "Ducklett", "Geodude", "Houndour", "Pansage",
+            ])
+            .collect(),
+        ]);
+        let after = discard_dominated_teams(score::<3>, &teams);
+        assert_eq!(after.len(), 1); // Keep both teams if identical scores but different members
     }
 }

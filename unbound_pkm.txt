@@ -1,4 +1,3 @@
-Ducklett
 Delibird
 Makuhita
 Beldum
@@ -15,12 +14,17 @@ Shellos
 Inkay
 Electrike
 Riolu
-Oricorio
-Drifloon
-Zapdos
-Xatu
 Panpour
 Pansage
 Pansear
 Comfey
 Cutiefly
+Magby
+Excadrill
+Murkrow
+Nidoran♂ (male)
+Houndoom
+Sneasel
+Gyarados
+Crabominable
+Phantump
