@@ -215,7 +215,7 @@ mod test {
             ])
             .collect(),
             parse_names(vec![
-                "Beldum", "Comfey", "Ducklett", "Geodude", "Pansage", "Houndour",
+                "Beldum", "Comfey", "Ducklett", "Geodude", "Houndour", "Pansage",
             ])
             .collect(),
         ]);
