@@ -1,6 +1,6 @@
 Delibird
 Makuhita
-Beldum
+Metang
 Roggenrola
 Hoothoot
 Snorunt
@@ -11,9 +11,7 @@ Poliwag
 Vanillite
 Wingull
 Shellos
-Inkay
 Electrike
-Riolu
 Panpour
 Pansage
 Pansear
@@ -21,10 +19,7 @@ Comfey
 Cutiefly
 Magby
 Excadrill
-Murkrow
 Nidoran♂ (male)
 Houndoom
 Sneasel
 Gyarados
-Crabominable
-Phantump

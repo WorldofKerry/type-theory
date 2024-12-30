@@ -6,7 +6,7 @@ use std::collections::BTreeSet;
 use std::sync::{Arc, Mutex};
 use type_theory::analysis::autoscale::AutoScale;
 use type_theory::analysis::scoring::{dominates, is_better};
-use type_theory::analysis::{checks, offensive_coverage, resistance, simulated_annealing};
+use type_theory::analysis::{checks, offensive_coverage, resistance, score, simulated_annealing};
 use type_theory::injest::{parse_names_file, parse_pkhex_dump};
 use type_theory::pokemon::Pokemon;
 
@@ -63,18 +63,6 @@ fn discard_dominated_teams<const N: usize>(
         }
     }
     not_dominated
-}
-
-pub fn score<const N: usize>(team: &Vec<Pokemon>) -> [f64; N] {
-    let mut ret: [f64; N] = [0.0; N];
-    ret[0] = resistance::per_type_net_resist_weak_count(team);
-    // ret[1] = resistance::one_resist_for_each_type(team);
-    // ret[2] = resistance::per_type_multiplier(team, 0.25);
-    // let random_pool = Pokemon::random_team(Pokemon::all_unique_type_chart(), 100).into_iter().collect();
-    // ret[3] = checks::counter_count(team, &random_pool) as f64;
-    ret[1] = offensive_coverage::offensive_coverage(team);
-    ret[2] = -(checks::counter_balance(team).len() as f64);
-    ret
 }
 
 fn main() {
@@ -227,7 +215,7 @@ mod test {
             ])
             .collect(),
             parse_names(vec![
-                "Beldum", "Comfey", "Ducklett", "Geodude", "Houndour", "Pansage",
+                "Beldum", "Comfey", "Ducklett", "Geodude", "Pansage", "Houndour",
             ])
             .collect(),
         ]);

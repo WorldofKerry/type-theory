@@ -231,6 +231,7 @@ impl Pokemon {
     pub fn random_team(pool: &Vec<Pokemon>, size: usize) -> Vec<Pokemon> {
         pool.choose_multiple(&mut rand::thread_rng(), size)
             .cloned()
+            .sorted()
             .collect()
     }
 
@@ -238,7 +239,7 @@ impl Pokemon {
         let missing = size - team.len();
         let mut new_team = team.clone();
         new_team.extend(Pokemon::random_team(pool, missing));
-        new_team
+        new_team.into_iter().sorted().collect()
     }
 }
 

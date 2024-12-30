@@ -1,5 +1,6 @@
 use crate::pokemon::Pokemon;
 use autoscale::AutoScale;
+use itertools::Itertools;
 use rand::Rng;
 use scoring::{is_better, dominates};
 pub mod autoscale;
@@ -11,6 +12,19 @@ pub mod resistance;
 pub mod resistance_connector;
 pub mod scoring;
 
+
+pub fn score<const N: usize>(team: &Vec<Pokemon>) -> [f64; N] {
+    let mut ret: [f64; N] = [0.0; N];
+    ret[0] = resistance::per_type_net_resist_weak_count(team);
+    // ret[1] = resistance::one_resist_for_each_type(team);
+    // ret[2] = resistance::per_type_multiplier(team, 0.25);
+    // let random_pool = Pokemon::random_team(Pokemon::all_unique_type_chart(), 100).into_iter().collect();
+    // ret[3] = checks::counter_count(team, &random_pool) as f64;
+    ret[1] = offensive_coverage::offensive_coverage(team);
+    ret[2] = -(checks::counter_balance(team).len() as f64);
+    ret
+}
+
 pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon> {
     let mut team = team.clone();
     let mut rng = rand::thread_rng();
@@ -21,7 +35,7 @@ pub fn random_neighbour(team: Vec<Pokemon>, pool: &Vec<Pokemon>) -> Vec<Pokemon>
     }
     let index = rng.gen_range(0..team.len());
     team[index] = replacement;
-    team
+    team.into_iter().sorted().collect()
 }
 
 pub fn simulated_annealing<const N: usize>(
