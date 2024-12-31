@@ -22,4 +22,5 @@ Excadrill
 Nidoran♂ (male)
 Houndoom
 Sneasel
-Gyarados
+Lucario
+Nidoqueen

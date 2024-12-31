@@ -45,10 +45,10 @@ pub fn simulated_annealing<const N: usize>(
 ) -> Vec<Pokemon> {
     let mut team_best = team.clone();
     let mut team_good = team;
-    let mut temp = -(N as f64) / 0.1f64.ln(); // Target acceptance rate of 50%
+    let mut temp = 0.1;
     let temp_step = 0.1;
     let k_max = pool.len();
-    while temp >= 0.0 {
+    while temp > 0.0 {
         for k in 0..k_max {
             let team_new = random_neighbour(team_good.clone(), pool);
             let scores_good = score_fn(&team_good);

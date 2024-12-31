@@ -54,8 +54,8 @@ mod tests {
     use crate::typing::BasicType;
     use super::*;
     #[test]
+    #[ignore]
     fn recursive_search_specific_type_complements() {
-        return; // This test is too slow
         use BasicType::*;
         let team = best_complement_cycle(&vec![Pokemon::from((Steel, Flying))], Pokemon::all(), 2);
         println!("{team:?}");

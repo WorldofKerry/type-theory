@@ -100,8 +100,8 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn find_every_steel_complement() {
-        return; // This test is too slow
         use BasicType::*;
         Pokemon::all()
             .iter()

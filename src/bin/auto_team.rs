@@ -70,7 +70,7 @@ fn main() {
     const THREAD_COUNT: usize = 6;
 
     const SCORES_COUNT: usize = 3;
-    let team_size = 6;
+    let team_size = 5;
     // let pool = Pokemon::all_unique_type_chart();
     let pool = {
         // let pool = parse_pkhex_dump("Box Data Dump.csv");
