@@ -2,7 +2,7 @@ use crate::pokemon::Pokemon;
 use autoscale::AutoScale;
 use itertools::Itertools;
 use rand::Rng;
-use scoring::{is_better, dominates};
+use scoring::{dominates, is_better};
 pub mod autoscale;
 pub mod checks;
 pub mod complement_cycle;
@@ -11,7 +11,6 @@ pub mod offensive_coverage;
 pub mod resistance;
 pub mod resistance_connector;
 pub mod scoring;
-
 
 pub fn score<const N: usize>(team: &Vec<Pokemon>) -> [f64; N] {
     let mut ret: [f64; N] = [0.0; N];
@@ -22,6 +21,11 @@ pub fn score<const N: usize>(team: &Vec<Pokemon>) -> [f64; N] {
     // ret[3] = checks::counter_count(team, &random_pool) as f64;
     ret[1] = offensive_coverage::offensive_coverage(team);
     ret[2] = -(checks::counter_balance(team).len() as f64);
+
+    // Require specific Pokemon
+    ret[3] = ["Excadrill", "Wingull", "Zapdos"]
+        .iter()
+        .all(|species| team.iter().any(|poke| poke.species == *species)) as i32 as f64;
     ret
 }
 
@@ -61,9 +65,7 @@ pub fn simulated_annealing<const N: usize>(
             //     scores_good, scores_new, delta, probability, temp
             // );
 
-            if delta > 0.0
-                || rand::Rng::gen_bool(&mut rand::thread_rng(), probability)
-            {
+            if delta > 0.0 || rand::Rng::gen_bool(&mut rand::thread_rng(), probability) {
                 team_good = team_new;
             }
 

@@ -24,3 +24,6 @@ Houndoom
 Sneasel
 Lucario
 Nidoqueen
+Tentacool
+Haunter
+Zapdos

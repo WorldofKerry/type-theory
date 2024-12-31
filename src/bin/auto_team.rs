@@ -38,27 +38,29 @@ fn discard_dominated_teams<const N: usize>(
     let mut not_dominated = BTreeSet::new();
     for team in teams {
         let team_scores = score(team);
-        let mut dominated = false;
+        let mut discard = false;
         for other_team in teams {
             if team == other_team {
                 continue;
             }
             let other_team_scores = score(other_team);
-            let mut all_dominated = true;
+            let mut dominated = true;
+            let mut identical = true;
             for (team_score, other_team_score) in team_scores.iter().zip(other_team_scores.iter()) {
-                if team_score >= other_team_score {
-                    all_dominated = false;
+                if team_score > other_team_score {
+                    dominated = false;
                     break;
                 }
+                if team_score != other_team_score {
+                    identical = false;
+                }
             }
-            if all_dominated {
-                // println!("{:?} dominated by {:?}", team.iter().map(|p| &p.species).collect::<Vec<_>>(), other_team.iter().map(|p| &p.species).collect::<Vec<_>>());
-                // println!("{:?} dominated by {:?}", team_scores, other_team_scores);
-                dominated = true;
+            if dominated && !identical {
+                discard = true;
                 break;
             }
         }
-        if !dominated {
+        if !discard {
             not_dominated.insert(team.clone());
         }
     }
@@ -69,8 +71,8 @@ fn main() {
     const SIMULATED_ANNEALING_ITERATIONS: usize = 100;
     const THREAD_COUNT: usize = 6;
 
-    const SCORES_COUNT: usize = 3;
-    let team_size = 5;
+    const SCORES_COUNT: usize = 4;
+    let team_size = 6;
     // let pool = Pokemon::all_unique_type_chart();
     let pool = {
         // let pool = parse_pkhex_dump("Box Data Dump.csv");
@@ -176,8 +178,9 @@ mod test {
             ])
             .collect(),
         ]);
-        let after = discard_dominated_teams(score::<3>, &teams);
+        let after = discard_dominated_teams(score::<5>, &teams);
         for team in &after {
+            eprint!("{:?}: ", score::<5>(team));
             team.iter().for_each(|p| eprint!("{:?} ", p.species));
             eprintln!();
         }
@@ -202,7 +205,7 @@ mod test {
             ])
             .collect(),
         ]);
-        let after = discard_dominated_teams(score::<3>, &teams);
+        let after = discard_dominated_teams(score::<5>, &teams);
         assert_eq!(after.len(), 2); // Keep both teams if identical scores but different members
     }
 
@@ -219,7 +222,7 @@ mod test {
             ])
             .collect(),
         ]);
-        let after = discard_dominated_teams(score::<3>, &teams);
+        let after = discard_dominated_teams(score::<5>, &teams);
         assert_eq!(after.len(), 1); // Keep both teams if identical scores but different members
     }
 }
