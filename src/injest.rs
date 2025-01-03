@@ -89,18 +89,14 @@ pub fn parse_names_file(file: &str) -> Vec<Pokemon> {
 /// Parses a Pokemon name strings to a a list of Pokemon
 pub fn parse_names<'a, T: IntoIterator<Item = &'a str>>(names: T) -> impl Iterator<Item = Pokemon> + use <'a, T> {
     let all_pokemon = Pokemon::all();
-    names.into_iter().map(move |name| {
+    names.into_iter().flat_map(move |name| {
         let species = name.to_string();
-        let matched_pokemon = all_pokemon.iter().find(|p| p.species == species).unwrap_or_else(|| {
+        let matched_pokemon = all_pokemon.iter().filter(|p| p.species == species).collect::<Vec<_>>();
+        if matched_pokemon.len() == 0 {
             panic!("Could not find {species:?} in the list of all Pokemon");
-        });
-        Pokemon {
-            species,
-            typing: matched_pokemon.typing.clone(),
-            ability: None,
-            moves: vec![],
         }
-    })
+        matched_pokemon
+    }).cloned()
 }
 
 #[cfg(test)]

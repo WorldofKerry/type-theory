@@ -120,6 +120,17 @@ impl From<(BasicType, BasicType)> for Pokemon {
     }
 }
 
+pub trait PokemonIteratorHelper: Iterator<Item = Pokemon> {
+    fn unique_by_type_ability(self) -> impl Iterator<Item = Pokemon>
+    where
+        Self: Sized,
+    {
+        self.unique_by(|p| (p.typing.clone(), p.ability))
+    }
+}
+
+impl<I> PokemonIteratorHelper for I where I: Iterator<Item = Pokemon> + ?Sized {}
+
 impl Pokemon {
     pub fn all() -> &'static Vec<Pokemon> {
         static CELL: OnceLock<Vec<Pokemon>> = OnceLock::new();
@@ -188,9 +199,9 @@ impl Pokemon {
         static CELL: OnceLock<Vec<Pokemon>> = OnceLock::new();
         CELL.get_or_init(|| {
             Pokemon::all()
-                .iter()
-                .unique_by(|p| (p.typing.clone(), p.ability))
-                .cloned()
+                .clone()
+                .into_iter()
+                .unique_by_type_ability()
                 .collect()
         })
     }

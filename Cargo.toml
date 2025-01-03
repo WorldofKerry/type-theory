@@ -21,3 +21,6 @@ path = "src/bin/auto_team.rs"
 [features]
 default = ["gen6"]
 gen6 = []
+
+[profile.test]
+opt-level = 3

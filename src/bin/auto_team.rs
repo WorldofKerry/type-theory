@@ -8,7 +8,7 @@ use type_theory::analysis::autoscale::AutoScale;
 use type_theory::analysis::scoring::{dominates, is_better};
 use type_theory::analysis::{checks, offensive_coverage, resistance, score, simulated_annealing};
 use type_theory::injest::{parse_names_file, parse_pkhex_dump};
-use type_theory::pokemon::Pokemon;
+use type_theory::pokemon::{Pokemon, PokemonIteratorHelper};
 
 fn compute_best_team<const N: usize>(
     autoscale: &AutoScale<N>,
@@ -76,7 +76,10 @@ fn main() {
     // let pool = Pokemon::all_unique_type_chart();
     let pool = {
         // let pool = parse_pkhex_dump("Box Data Dump.csv");
-        let pool = parse_names_file("unbound_pkm.txt");
+        let pool = parse_names_file("unbound_pkm.txt")
+            .into_iter()
+            .unique_by_type_ability()
+            .collect::<Vec<_>>();
         pool.iter()
             .for_each(|p| eprintln!("{:?} {:?} {:?}", p.species, p.typing, p.ability));
         pool

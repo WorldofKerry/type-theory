@@ -23,7 +23,7 @@ pub fn score<const N: usize>(team: &Vec<Pokemon>) -> [f64; N] {
     ret[2] = -(checks::counter_balance(team).len() as f64);
 
     // Require specific Pokemon
-    ret[3] = ["Excadrill", "Wingull", "Zapdos"]
+    ret[3] = ["Excadrill", "Wingull", "Manectric"]
         .iter()
         .all(|species| team.iter().any(|poke| poke.species == *species)) as i32 as f64;
     ret
