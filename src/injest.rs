@@ -5,7 +5,7 @@ use crate::{
 use itertools::Itertools;
 use rand::seq::SliceRandom;
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeSet, str::FromStr, sync::OnceLock};
+use std::{collections::BTreeSet, path::Path, str::FromStr, sync::OnceLock};
 use strum::IntoEnumIterator;
 
 pub fn parse_pkhex_dump(file: &str) -> Vec<Pokemon> {
@@ -82,7 +82,7 @@ pub fn parse_pkhex_dump(file: &str) -> Vec<Pokemon> {
 }
 
 /// Parses a file of Pokemon names in each line
-pub fn parse_names_file(file: &str) -> Vec<Pokemon> {
+pub fn parse_names_file(file: impl AsRef<Path>) -> Vec<Pokemon> {
     parse_names(std::fs::read_to_string(file).unwrap().lines()).collect()
 }
 

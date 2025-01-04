@@ -1,5 +1,6 @@
 pub fn reversed_elu(input: f64) -> f64 {
-    return -(f64::exp(1.0).powf(-input)) + 1.0;
+    let base = 1.5f64;
+    return -base.powf(-input) + 1.0;
 }
 
 /// Check if score1 dominates score2,

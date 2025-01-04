@@ -1,5 +1,6 @@
 /// Given a pkhex dump of available Pokemon, stochastically finds the best team based on a scoring function
 use core::f64;
+use std::path::PathBuf;
 use itertools::Itertools;
 use rayon::iter::ParallelIterator;
 use std::collections::BTreeSet;
@@ -9,6 +10,7 @@ use type_theory::analysis::scoring::{dominates, is_better};
 use type_theory::analysis::{checks, offensive_coverage, resistance, score, simulated_annealing};
 use type_theory::injest::{parse_names_file, parse_pkhex_dump};
 use type_theory::pokemon::{Pokemon, PokemonIteratorHelper};
+use clap::Parser;
 
 fn compute_best_team<const N: usize>(
     autoscale: &AutoScale<N>,
@@ -67,16 +69,23 @@ fn discard_dominated_teams<const N: usize>(
     not_dominated
 }
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about=None)]
+struct Cli {
+    #[arg(short, long)]
+    path: Option<PathBuf>
+}
+
 fn main() {
+    let cli = Cli::parse();
+
     const SIMULATED_ANNEALING_ITERATIONS: usize = 100;
     const THREAD_COUNT: usize = 6;
 
     const SCORES_COUNT: usize = 4;
     let team_size = 6;
-    // let pool = Pokemon::all_unique_type_chart();
     let pool = {
-        // let pool = parse_pkhex_dump("Box Data Dump.csv");
-        let pool = parse_names_file("unbound_pkm.txt")
+        let pool = parse_names_file(cli.path.unwrap_or_else(|| panic!("No path provided")))
             .into_iter()
             .unique_by_type_ability()
             .collect::<Vec<_>>();
