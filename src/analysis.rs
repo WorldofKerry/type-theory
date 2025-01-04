@@ -49,7 +49,7 @@ pub fn simulated_annealing<const N: usize>(
 ) -> Vec<Pokemon> {
     let mut team_best = team.clone();
     let mut team_good = team;
-    let mut temp = 0.1;
+    let mut temp = 0.3;
     let temp_step = 0.1;
     let k_max = pool.len();
     while temp > 0.0 {

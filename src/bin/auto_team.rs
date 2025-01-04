@@ -79,7 +79,7 @@ struct Cli {
 fn main() {
     let cli = Cli::parse();
 
-    const SIMULATED_ANNEALING_ITERATIONS: usize = 100;
+    const SIMULATED_ANNEALING_ITERATIONS: usize = 500;
     const THREAD_COUNT: usize = 6;
 
     const SCORES_COUNT: usize = 4;

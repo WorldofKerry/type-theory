@@ -1,5 +1,5 @@
 pub fn reversed_elu(input: f64) -> f64 {
-    let base = 1.5f64;
+    let base = f64::exp(1.0);
     return -base.powf(-input) + 1.0;
 }
 
